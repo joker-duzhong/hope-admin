@@ -2,7 +2,7 @@
 import { Layout as ArcoLayout, Menu, Button } from '@arco-design/web-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '@/store/useUserStore';
-import { IconDashboard, IconSettings, IconUserGroup } from '@arco-design/web-react/icon';
+import { IconDashboard, IconSettings, IconUserGroup, IconBook } from '@arco-design/web-react/icon';
 
 const MenuItem = Menu.Item;
 const Sider = ArcoLayout.Sider;
@@ -24,6 +24,11 @@ const AppLayout: React.FC = () => {
       key: '/dashboard',
       title: '仪表盘',
       icon: <IconDashboard />,
+    },
+    {
+      key: '/apps/TimeLibrary',
+      title: '时空图书馆',
+      icon: <IconBook />,
     },
     {
       key: '/system/users',
@@ -69,7 +74,7 @@ const AppLayout: React.FC = () => {
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--hope-text-primary)' }}>DashBoard</div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
-            <span style={{ marginRight: 20, color: 'var(--hope-text-secondary)', fontWeight: 500 }}>{userInfo?.nickname || userInfo?.username || '用户'}</span>
+            <span style={{ marginRight: 20, color: 'var(--hope-text-secondary)', fontWeight: 500 }}>{userInfo?.nickname || '用户'}</span>
             <Button onClick={handleLogout} type="text" status="danger">退出登录</Button>
           </div>
         </Header>

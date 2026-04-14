@@ -10,6 +10,7 @@ const Dashboard = () => <div className="hope-card">仪表盘内容待开发...</
 
 const UserList = lazy(() => import('@/pages/System/User'));
 const RoleList = lazy(() => import('@/pages/System/Role'));
+const TimeLibrary = lazy(() => import('@/pages/Apps/TimeLibrary'));
 
 export const router = createBrowserRouter([
   {
@@ -34,6 +35,14 @@ export const router = createBrowserRouter([
           {
             path: 'dashboard',
             element: <Dashboard />,
+          },
+          {
+            path: 'apps/TimeLibrary',
+            element: (
+              <Suspense fallback={<div>加载中...</div>}>
+                <TimeLibrary />
+              </Suspense>
+            ),
           },
         ],
       },

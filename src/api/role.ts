@@ -29,10 +29,10 @@ export const createRoleApi = (data: RoleCreate) => {
   return request.post<ApiResponse<RoleResponse>>('/api/v1/admin/roles', data);
 };
 
-export const updateRoleApi = (roleId: number, data: RoleUpdate) => {
+export const updateRoleApi = (roleId: string | number, data: RoleUpdate) => {
   return request.put<ApiResponse<RoleResponse>>(`/api/v1/admin/roles/${roleId}`, data);
 };
 
-export const deleteRoleApi = (roleId: number) => {
+export const deleteRoleApi = (roleId: string | number) => {
   return request.delete<ApiResponse<any>>(`/api/v1/admin/roles/${roleId}`);
 };

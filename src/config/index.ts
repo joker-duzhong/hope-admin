@@ -1,4 +1,4 @@
-export const WECHAT_APP_ID = import.meta.env.DEV
+export const WECHAT_APP_ID = false && import.meta.env.DEV
   ? 'wxea6611dfdc3ecc4f'
   : 'wx29ee8c1ad373bafa';
 

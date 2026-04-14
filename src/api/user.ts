@@ -2,7 +2,7 @@ import request from '@/utils/request';
 import type { ApiResponse } from '@/types';
 
 export interface AdminUserListItem {
-  id: number;
+  id: string | number;
   nickname?: string;
   username?: string;
   phone?: string;
@@ -20,14 +20,24 @@ export interface PaginatedData<T> {
   size: number;
 }
 
-export const getUsersApi = (params: { page: number; size: number }) => {
+export interface UserUpdateParams {
+  nickname?: string;
+  avatar_url?: string;
+  phone?: string;
+}
+
+export const updateUserApi = (userId: string | number, data: UserUpdateParams) => {
+  return request.patch<ApiResponse<any>>(`/api/v1/admin/users/${userId}`, data);
+};
+
+export const getUsersApi = (params: { page?: number; size?: number }) => {
   return request.get<ApiResponse<PaginatedData<AdminUserListItem>>>('/api/v1/admin/users', { params });
 };
 
-export const freezeUserApi = (userId: number, is_active: boolean) => {
+export const freezeUserApi = (userId: string | number, is_active: boolean) => {
   return request.patch<ApiResponse<any>>(`/api/v1/admin/users/${userId}/freeze`, { is_active });
 };
 
-export const assignUserRolesApi = (userId: number, role_ids: number[]) => {
+export const assignUserRolesApi = (userId: string | number, role_ids: number[]) => {
   return request.put<ApiResponse<any>>(`/api/v1/admin/users/${userId}/roles`, { role_ids });
 };
