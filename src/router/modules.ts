@@ -1,4 +1,5 @@
 import { systemModule } from '@/projects/system/router';
+import { aurakeyModule } from '@/projects/aurakey/router';
 import { timelibraryModule } from '@/projects/timelibrary/router';
 import type { AppModule } from '@/core/types/module';
 
@@ -9,6 +10,7 @@ import type { AppModule } from '@/core/types/module';
  * Layout 会自动聚合菜单，router 会自动挂载路由。
  */
 export const appModules: AppModule[] = [
+  aurakeyModule,
   timelibraryModule,
   systemModule,
 ];

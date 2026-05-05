@@ -5,8 +5,7 @@ import ProtectedRoute from '@/core/components/ProtectedRoute';
 import { appModules } from './modules';
 
 const Login = lazy(() => import('@/pages/Login'));
-
-const Dashboard = () => <div className="hope-card">仪表盘内容待开发...</div>;
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
 
 export const router = createBrowserRouter([
   {
@@ -31,7 +30,11 @@ export const router = createBrowserRouter([
         children: [
           {
             path: 'dashboard',
-            element: <Dashboard />,
+            element: (
+              <Suspense fallback={<div>加载中...</div>}>
+                <Dashboard />
+              </Suspense>
+            ),
           },
         ],
       },

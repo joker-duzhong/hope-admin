@@ -19,7 +19,7 @@ export default function UserList() {
 
   const fetchData = async (page = 1, size = 10, extraFilters?: Omit<UserListParams, 'page' | 'size'>) => {
     setLoading(true);
-    const params = { page, size, ...(extraFilters ?? filters) };
+    const params = { page, page_size: size, ...(extraFilters ?? filters) };
     // 去掉空字符串字段，避免传 '' 给后端
     Object.keys(params).forEach((k) => {
       const key = k as keyof typeof params;
@@ -43,9 +43,11 @@ export default function UserList() {
 
   const handleSearch = () => {
     const values = form.getFieldsValue();
+    const isActiveValue =
+      values.is_active === 'true' ? true : values.is_active === 'false' ? false : undefined;
     const newFilters: Omit<UserListParams, 'page' | 'size'> = {
       keyword: values.keyword || undefined,
-      is_active: values.is_active === '' ? undefined : values.is_active,
+      is_active: isActiveValue,
       role_code: values.role_code || undefined,
       source: values.source || undefined,
     };
@@ -119,8 +121,8 @@ export default function UserList() {
         </FormItem>
         <FormItem field="is_active">
           <Select placeholder="状态" style={{ width: 100 }} allowClear>
-            <Select.Option value={true}>启用</Select.Option>
-            <Select.Option value={false}>已冻结</Select.Option>
+            <Select.Option value="true">启用</Select.Option>
+            <Select.Option value="false">已冻结</Select.Option>
           </Select>
         </FormItem>
         <FormItem field="source">

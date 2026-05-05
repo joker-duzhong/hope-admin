@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Layout as ArcoLayout, Menu, Button } from '@arco-design/web-react';
+import { Layout as ArcoLayout, Menu, Button, Breadcrumb } from '@arco-design/web-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '@/core/store/useUserStore';
 import { IconDashboard } from '@arco-design/web-react/icon';
@@ -82,6 +82,36 @@ const AppLayout: React.FC = () => {
     [useGroupedMenu, manualOpenKeys, routeOpenKeys]
   );
 
+  const breadcrumbItems = useMemo(() => {
+    if (location.pathname === '/dashboard') {
+      return ['仪表盘'];
+    }
+
+    const matchedModule = visibleModuleMenus.find((module) =>
+      module.menuMeta.some(
+        (item) => location.pathname === item.key || location.pathname.startsWith(`${item.key}/`)
+      )
+    );
+
+    if (matchedModule) {
+      const matchedMenu =
+        matchedModule.menuMeta.find((item) => item.key === location.pathname) ||
+        matchedModule.menuMeta
+          .filter((item) => location.pathname.startsWith(`${item.key}/`))
+          .sort((a, b) => b.key.length - a.key.length)[0];
+
+      if (matchedMenu) {
+        if (matchedModule.moduleMeta.title === matchedMenu.title) {
+          return [matchedMenu.title];
+        }
+        return [matchedModule.moduleMeta.title, matchedMenu.title];
+      }
+    }
+
+    const segments = location.pathname.split('/').filter(Boolean);
+    return segments.length > 0 ? segments : ['首页'];
+  }, [location.pathname, visibleModuleMenus]);
+
   return (
     <ArcoLayout
       style={{
@@ -109,7 +139,7 @@ const AppLayout: React.FC = () => {
         <Menu
           selectedKeys={[location.pathname]}
           openKeys={mergedOpenKeys}
-          onClickSubMenu={(key, openKeys) => setManualOpenKeys(openKeys as string[])}
+          onClickSubMenu={(_, openKeys) => setManualOpenKeys(openKeys as string[])}
           onClickMenuItem={(key) => navigate(key)}
           style={{ width: '100%' }}
         >
@@ -158,9 +188,11 @@ const AppLayout: React.FC = () => {
       >
         <Header className="hope-header" style={{ height: 'var(--hope-header-height)' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--hope-text-primary)' }}>
-              DashBoard
-            </div>
+            <Breadcrumb>
+              {breadcrumbItems.map((item) => (
+                <Breadcrumb.Item key={item}>{item}</Breadcrumb.Item>
+              ))}
+            </Breadcrumb>
           </div>
           <div style={{ display: 'flex', alignItems: 'center' }}>
             <span style={{ marginRight: 20, color: 'var(--hope-text-secondary)', fontWeight: 500 }}>
