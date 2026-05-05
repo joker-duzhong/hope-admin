@@ -32,9 +32,9 @@ request.interceptors.response.use(
     const status = error.response?.status;
     if (status === 401) {
       useUserStore.getState().logout();
-      if (window.location.pathname !== '/login') {
+      if (window.location.pathname !== '/admin/login') {
         Message.error('Token 已过期或无效，请重新登录。');
-        window.location.href = '/login';
+        window.location.href = '/admin/login';
       }
     } else {
       const data = error.response?.data as any;
