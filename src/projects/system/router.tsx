@@ -9,6 +9,11 @@ const RoleList = lazy(() => import('./pages/Role'));
 const Loading = () => <div>加载中...</div>;
 
 export const systemModule: AppModule = {
+  moduleMeta: {
+    key: 'system',
+    title: '系统管理',
+    icon: <IconSettings />,
+  },
   routes: [
     {
       element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,

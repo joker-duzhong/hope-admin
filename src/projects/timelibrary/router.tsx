@@ -8,6 +8,11 @@ const TimeLibrary = lazy(() => import('./pages'));
 const Loading = () => <div>加载中...</div>;
 
 export const timelibraryModule: AppModule = {
+  moduleMeta: {
+    key: 'timelibrary',
+    title: '时空图书馆',
+    icon: <IconBook />,
+  },
   routes: [
     {
       element: <ProtectedRoute />,

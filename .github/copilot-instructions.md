@@ -90,9 +90,16 @@ export interface MenuMeta {
   roles?: string[];   // 允许访问的角色 code 列表（空/undefined = 所有登录用户可见）
 }
 
+export interface ModuleMeta {
+  key: string;        // 模块分组 key，如 'system'
+  title: string;      // 模块分组标题
+  icon?: ReactNode;   // 模块分组图标
+}
+
 export interface AppModule {
-  routes: RouteObject[];   // React Router 路由配置（包含权限守卫）
-  menuMeta: MenuMeta[];    // 该模块的菜单项列表
+  moduleMeta: ModuleMeta; // 模块分组信息（用于多角色用户的二级菜单）
+  routes: RouteObject[];  // React Router 路由配置（包含权限守卫）
+  menuMeta: MenuMeta[];   // 该模块的菜单项列表
 }
 ```
 
@@ -129,6 +136,11 @@ import type { AppModule } from '@/core/types/module';
 const MainPage = lazy(() => import('./pages'));
 
 export const <projectName>Module: AppModule = {
+  moduleMeta: {
+    key: '<项目名>',
+    title: '应用显示名称',
+    icon: <Icon />,
+  },
   routes: [
     {
       // 若需要特定角色才能访问，传入 allowedRoles
@@ -233,6 +245,14 @@ export const appModules: AppModule[] = [
 - 每个模块的 `routes` 数组中必须包含对应的 `<ProtectedRoute>` 守卫
 - 路由 `path` 规范：`apps/<项目名>` 格式，**全小写，无大写字母**
 - `menuMeta.key` 必须与路由 `path` 一致（加前缀 `/`）
+- `moduleMeta` 必填，用于在多角色用户侧边栏中进行分组展示
+
+### Layout 菜单策略 (core/components/Layout)
+- 自动根据登录用户角色数切换菜单展示：
+  - 单角色用户：所有菜单项平铺展示
+  - 多角色用户：按模块分组展示为二级菜单
+- `SUPER_ADMIN` 必须视为多角色用户（即使其角色数组长度为 1，也使用二级菜单）
+- 菜单项展示仍必须遵守 `menuMeta.roles` 的权限过滤
 
 ### 视图层 (pages/)
 - 统一使用 Arco Design 组件库

@@ -30,7 +30,16 @@ export const updateUserApi = (userId: string | number, data: UserUpdateParams) =
   return request.patch<ApiResponse<any>>(`/api/v1/admin/users/${userId}`, data);
 };
 
-export const getUsersApi = (params: { page?: number; size?: number }) => {
+export interface UserListParams {
+  page?: number;
+  size?: number;
+  keyword?: string;
+  is_active?: boolean;
+  role_code?: string;
+  source?: string;
+}
+
+export const getUsersApi = (params: UserListParams) => {
   return request.get<ApiResponse<PaginatedData<AdminUserListItem>>>('/api/v1/admin/users', { params });
 };
 

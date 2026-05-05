@@ -92,30 +92,64 @@ body, html {
 }
 
 .hope-sidebar .arco-menu-item {
-  margin: 8px 16px;
+  margin: 4px 12px;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 10px !important;
   border-radius: var(--hope-radius-small);
   color: var(--hope-text-secondary);
   font-weight: 500;
-  transition: all 0.3s;
+  transition: all 0.2s;
 }
 
 .hope-sidebar .arco-menu-item:hover {
-  background-color: rgba(72, 128, 255, 0.1);
-  color: var(--hope-primary-color);
+  background-color: rgba(72, 128, 255, 0.12);
+  color: #1f2937;
 }
 
 .hope-sidebar .arco-menu-item.arco-menu-selected {
-  background-color: var(--hope-primary-color);
-  color: #fff;
-  box-shadow: 0 4px 10px rgba(72, 128, 255, 0.3);
+  background-color: rgba(72, 128, 255, 0.16);
+  color: var(--hope-primary-color);
+  box-shadow: none;
 }
 
 .hope-sidebar .arco-menu-selected .arco-icon {
-  color: #fff;
+  color: var(--hope-primary-color);
 }
 
 .hope-sidebar .arco-menu-selected:hover {
-  color: #fff;
+  color: var(--hope-primary-color);
+  background-color: rgba(72, 128, 255, 0.2);
+}
+
+.hope-sidebar .arco-menu-item:hover .arco-icon {
+  color: #1f2937;
+}
+
+/* 二级菜单容器更紧凑，避免占用过大视觉块 */
+.hope-sidebar .arco-menu-inline-header {
+  margin: 4px 12px;
+  height: 36px;
+  line-height: 36px;
+  padding: 0 10px !important;
+  border-radius: var(--hope-radius-small);
+  color: var(--hope-text-secondary);
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.hope-sidebar .arco-menu-inline-header:hover {
+  background-color: rgba(72, 128, 255, 0.1);
+  color: #1f2937;
+}
+
+.hope-sidebar .arco-menu-inline .arco-menu-item {
+  margin-left: 20px;
+}
+
+.hope-sidebar .arco-menu-inline-content {
+  padding-top: 2px;
+  padding-bottom: 2px;
 }
 
 /* Header Overrides */

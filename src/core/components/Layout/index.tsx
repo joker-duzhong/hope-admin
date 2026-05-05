@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Layout as ArcoLayout, Menu, Button } from '@arco-design/web-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '@/core/store/useUserStore';
@@ -6,6 +6,7 @@ import { IconDashboard } from '@arco-design/web-react/icon';
 import { appModules } from '@/router/modules';
 
 const MenuItem = Menu.Item;
+const SubMenu = Menu.SubMenu;
 const Sider = ArcoLayout.Sider;
 const Header = ArcoLayout.Header;
 const Content = ArcoLayout.Content;
@@ -14,23 +15,84 @@ const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { logout, userInfo } = useUserStore();
+  const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([]);
 
   const handleLogout = () => {
     logout();
     navigate('/login');
   };
 
-  // 聚合所有模块的菜单元数据，并根据当前用户角色过滤
-  const allMenuItems = appModules.flatMap((m) => m.menuMeta);
+  const userRoleCodes = useMemo(
+    () => (userInfo?.roles || []).map((r) => r.code || r.name),
+    [userInfo?.roles]
+  );
 
-  const visibleMenuItems = allMenuItems.filter((item) => {
-    if (!item.roles || item.roles.length === 0) return true;
-    return userInfo?.roles?.some((r) => item.roles!.includes(r.code || r.name));
-  });
+  const isSuperAdmin = userRoleCodes.includes('SUPER_ADMIN');
+  const hasMultipleRoles = userRoleCodes.length > 1;
+  // 规则：超级管理员默认按多角色处理
+  const useGroupedMenu = isSuperAdmin || hasMultipleRoles;
+
+  // 过滤用户可见菜单并按模块分组
+  const visibleModuleMenus = useMemo(
+    () =>
+      appModules
+        .map((module) => {
+          const visibleMenus = module.menuMeta.filter((item) => {
+            if (!item.roles || item.roles.length === 0) return true;
+            return userRoleCodes.some((code) => item.roles!.includes(code));
+          });
+          return {
+            moduleMeta: module.moduleMeta,
+            menuMeta: visibleMenus,
+          };
+        })
+        .filter((module) => module.menuMeta.length > 0),
+    [userRoleCodes]
+  );
+
+  const visibleFlatMenus = useMemo(
+    () => visibleModuleMenus.flatMap((module) => module.menuMeta),
+    [visibleModuleMenus]
+  );
+
+  const routeOpenKeys = useMemo(
+    () =>
+      useGroupedMenu
+        ? visibleModuleMenus
+            .filter((module) =>
+              module.menuMeta.some((item) => location.pathname === item.key || location.pathname.startsWith(`${item.key}/`))
+            )
+            .map((module) => module.moduleMeta.key)
+        : [],
+    [useGroupedMenu, visibleModuleMenus, location.pathname]
+  );
+
+  // 当路由命中某个分组时，自动把该分组加入展开状态；同时保留用户手动展开的分组
+  useEffect(() => {
+    if (!useGroupedMenu) {
+      setManualOpenKeys([]);
+      return;
+    }
+
+    setManualOpenKeys((prev) => Array.from(new Set([...prev, ...routeOpenKeys])));
+  }, [useGroupedMenu, routeOpenKeys]);
+
+  const mergedOpenKeys = useMemo(
+    () => (useGroupedMenu ? Array.from(new Set([...manualOpenKeys, ...routeOpenKeys])) : []),
+    [useGroupedMenu, manualOpenKeys, routeOpenKeys]
+  );
 
   return (
-    <ArcoLayout style={{ height: '100vh', width: '100vw' }}>
-      <Sider className="hope-sidebar" width={250}>
+    <ArcoLayout
+      style={{
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'row',
+        overflow: 'hidden',
+      }}
+    >
+      <Sider className="hope-sidebar" width={250} style={{ flex: '0 0 250px' }}>
         <div
           style={{
             display: 'flex',
@@ -46,6 +108,8 @@ const AppLayout: React.FC = () => {
         </div>
         <Menu
           selectedKeys={[location.pathname]}
+          openKeys={mergedOpenKeys}
+          onClickSubMenu={(key, openKeys) => setManualOpenKeys(openKeys as string[])}
           onClickMenuItem={(key) => navigate(key)}
           style={{ width: '100%' }}
         >
@@ -55,16 +119,43 @@ const AppLayout: React.FC = () => {
             仪表盘
           </MenuItem>
 
-          {/* 各模块动态注入的菜单项 */}
-          {visibleMenuItems.map((item) => (
-            <MenuItem key={item.key}>
-              {item.icon}
-              {item.title}
-            </MenuItem>
-          ))}
+          {/* 角色自动切换菜单模式：单角色平铺，多角色（含超级管理员）二级分组 */}
+          {useGroupedMenu
+            ? visibleModuleMenus.map((module) => (
+                <SubMenu
+                  key={module.moduleMeta.key}
+                  title={
+                    <>
+                      {module.moduleMeta.icon}
+                      {module.moduleMeta.title}
+                    </>
+                  }
+                >
+                  {module.menuMeta.map((item) => (
+                    <MenuItem key={item.key}>
+                      {item.icon}
+                      {item.title}
+                    </MenuItem>
+                  ))}
+                </SubMenu>
+              ))
+            : visibleFlatMenus.map((item) => (
+                <MenuItem key={item.key}>
+                  {item.icon}
+                  {item.title}
+                </MenuItem>
+              ))}
         </Menu>
       </Sider>
-      <ArcoLayout style={{ backgroundColor: 'var(--hope-bg-body)' }}>
+      <ArcoLayout
+        style={{
+          backgroundColor: 'var(--hope-bg-body)',
+          display: 'flex',
+          flexDirection: 'column',
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Header className="hope-header" style={{ height: 'var(--hope-header-height)' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 600, color: 'var(--hope-text-primary)' }}>
