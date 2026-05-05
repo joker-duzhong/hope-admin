@@ -1,16 +1,12 @@
 import { lazy, Suspense } from 'react';
 import { createBrowserRouter, Navigate } from 'react-router-dom';
-import Layout from '@/components/Layout';
-import ProtectedRoute from '@/components/ProtectedRoute';
+import Layout from '@/core/components/Layout';
+import ProtectedRoute from '@/core/components/ProtectedRoute';
+import { appModules } from './modules';
 
-const Login = lazy(() => import('@/pages/Login/index'));
+const Login = lazy(() => import('@/pages/Login'));
 
-// Temporary dummy components for testing
 const Dashboard = () => <div className="hope-card">仪表盘内容待开发...</div>;
-
-const UserList = lazy(() => import('@/pages/System/User'));
-const RoleList = lazy(() => import('@/pages/System/Role'));
-const TimeLibrary = lazy(() => import('@/pages/Apps/TimeLibrary'));
 
 export const router = createBrowserRouter([
   {
@@ -30,43 +26,17 @@ export const router = createBrowserRouter([
         element: <Navigate to="/dashboard" replace />,
       },
       {
+        // 仪表盘：仅需登录即可访问
         element: <ProtectedRoute />,
         children: [
           {
             path: 'dashboard',
             element: <Dashboard />,
           },
-          {
-            path: 'apps/TimeLibrary',
-            element: (
-              <Suspense fallback={<div>加载中...</div>}>
-                <TimeLibrary />
-              </Suspense>
-            ),
-          },
         ],
       },
-      {
-         element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
-         children: [
-           {
-              path: 'system/users',
-              element: (
-                <Suspense fallback={<div>加载中...</div>}>
-                  <UserList />
-                </Suspense>
-              ),
-           },
-           {
-              path: 'system/roles',
-              element: (
-                <Suspense fallback={<div>加载中...</div>}>
-                  <RoleList />
-                </Suspense>
-              ),
-           },
-         ],
-      }
+      // 各业务模块路由（每个模块自带权限守卫）
+      ...appModules.flatMap((m) => m.routes),
     ],
   },
   {

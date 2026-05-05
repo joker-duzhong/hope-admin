@@ -1,9 +1,9 @@
 ﻿import React, { useState, useEffect, useRef } from 'react';
 import { Form, Input, Button, Message, Card, Tabs, Spin } from '@arco-design/web-react';
-import { loginApi, type LoginParams, getMeApi, getWechatQrcodeApi, getWechatStatusApi } from '@/api/auth';
-import { useUserStore } from '@/store/useUserStore';
+import { loginApi, type LoginParams, getMeApi, getWechatQrcodeApi, getWechatStatusApi } from '@/core/api/auth';
+import { useUserStore } from '@/core/store/useUserStore';
 import { useNavigate } from 'react-router-dom';
-import { WECHAT_APP_ID } from '@/config';
+import { WECHAT_APP_ID } from '@/core/config';
 
 const Item = Form.Item;
 const TabPane = Tabs.TabPane;
