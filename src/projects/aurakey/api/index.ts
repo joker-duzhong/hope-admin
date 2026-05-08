@@ -1,5 +1,5 @@
-import request from '@/core/utils/request';
-import type { ApiResponse } from '@/core/types';
+import request from "@/core/utils/request";
+import type { ApiResponse } from "@/core/types";
 import type {
   AurakeyAdminAdjustBalancePayload,
   AurakeyAdminAdjustBalanceResult,
@@ -19,9 +19,11 @@ import type {
   AurakeyProduct,
   AurakeyProductCreatePayload,
   AurakeyProductUpdatePayload,
-} from '../types';
+} from "../types";
 
-const adminBase = '/api/v1/aurakey/admin';
+const versionV1 = "/api/v1";
+const baseURL = `${versionV1}/aurakey`;
+const adminBase = `${baseURL}/admin`;
 
 export const getAurakeyDashboardStats = () => {
   return request.get<ApiResponse<AurakeyAdminStats>>(`${adminBase}/dashboard/stats`);
@@ -40,7 +42,7 @@ export const refundAurakeyOrder = (orderNo: string, payload: AurakeyAdminRefundP
 };
 
 export const getAurakeyGalleryCategories = () => {
-  return request.get<ApiResponse<AurakeyAdminGalleryCategory[]>>(`${adminBase}/gallery/categories`);
+  return request.get<ApiResponse<AurakeyAdminGalleryCategory[]>>(`${baseURL}/gallery/categories`);
 };
 
 export const createAurakeyGalleryCategory = (payload: AurakeyAdminGalleryCategoryPayload) => {
@@ -65,7 +67,7 @@ export const createAurakeyOptionRatio = (payload: AurakeyAdminOptionRatioPayload
 
 // ============ C\u7aef API \u51fd\u6570 ============
 
-const clientBase = '/api/v1/aurakey';
+const clientBase = "/api/v1/aurakey";
 
 export const getAurakeyGalleryList = (page: number = 1, pageSize: number = 20) => {
   return request.get<ApiResponse<AurakeyGalleryListResponse>>(`${clientBase}/gallery/list`, {
@@ -74,19 +76,19 @@ export const getAurakeyGalleryList = (page: number = 1, pageSize: number = 20) =
 };
 
 export const getAurakeyProducts = () => {
-  return request.get<ApiResponse<AurakeyProduct[]>>(`${clientBase}/store/products`);
+  return request.get<ApiResponse<AurakeyProduct[]>>(`${clientBase}/products`);
 };
 
 // ============ 产品管理接口 ============
 
 export const createAurakeyProduct = (payload: AurakeyProductCreatePayload) => {
-  return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/store/products`, payload);
+  return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/products`, payload);
 };
 
 export const updateAurakeyProduct = (id: string, payload: AurakeyProductUpdatePayload) => {
-  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/store/products/${id}`, payload);
+  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/products/${id}`, payload);
 };
 
 export const deleteAurakeyProduct = (id: string) => {
-  return request.delete<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/store/products/${id}`);
+  return request.delete<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/products/${id}`);
 };
