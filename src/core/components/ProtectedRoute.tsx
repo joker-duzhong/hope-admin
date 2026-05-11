@@ -17,6 +17,10 @@ const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ allowedRoles }) => {
   }
 
   if (allowedRoles && allowedRoles.length > 0) {
+    if (userInfo.is_superuser) {
+      return <Outlet />;
+    }
+
     const hasRole = userInfo.roles?.some((role) => allowedRoles.includes(role.code || role.name));
     if (!hasRole) {
       return <Navigate to="/" replace />;

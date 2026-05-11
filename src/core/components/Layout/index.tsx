@@ -27,7 +27,7 @@ const AppLayout: React.FC = () => {
     [userInfo?.roles]
   );
 
-  const isSuperAdmin = userRoleCodes.includes('SUPER_ADMIN');
+  const isSuperAdmin = userInfo?.is_superuser === true;
   const hasMultipleRoles = userRoleCodes.length > 1;
   // 规则：超级管理员默认按多角色处理
   const useGroupedMenu = isSuperAdmin || hasMultipleRoles;
@@ -38,6 +38,7 @@ const AppLayout: React.FC = () => {
       appModules
         .map((module) => {
           const visibleMenus = module.menuMeta.filter((item) => {
+            if (isSuperAdmin) return true;
             if (!item.roles || item.roles.length === 0) return true;
             return userRoleCodes.some((code) => item.roles!.includes(code));
           });
@@ -47,7 +48,7 @@ const AppLayout: React.FC = () => {
           };
         })
         .filter((module) => module.menuMeta.length > 0),
-    [userRoleCodes]
+    [isSuperAdmin, userRoleCodes]
   );
 
   const visibleFlatMenus = useMemo(

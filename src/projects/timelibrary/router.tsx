@@ -15,7 +15,7 @@ export const timelibraryModule: AppModule = {
   },
   routes: [
     {
-      element: <ProtectedRoute />,
+      element: <ProtectedRoute allowedRoles={['timelibrary_admin']} />,
       children: [
         {
           path: 'apps/timelibrary',
@@ -33,6 +33,7 @@ export const timelibraryModule: AppModule = {
       key: '/apps/timelibrary',
       title: '时空图书馆',
       icon: <IconBook />,
+      roles: ['timelibrary_admin'],
     },
   ],
 };

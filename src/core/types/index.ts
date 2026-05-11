@@ -13,6 +13,7 @@ export interface User {
   phone?: string;
   source: string;
   is_active: boolean;
+  is_superuser?: boolean;
   roles: Role[];
 }
 

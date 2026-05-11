@@ -41,7 +41,8 @@ const Login: React.FC = () => {
         const meRes = await getMeApi();
         if (meRes.data.code === 200) {
            Message.success('登录成功');
-           const mockUser = {...meRes.data.data}; if (!mockUser.roles) mockUser.roles = []; if (!mockUser.roles.find(r => r.code === 'SUPER_ADMIN')) { mockUser.roles.push({id: 1, name: '超级管理员', code: 'SUPER_ADMIN', scope: 'global'}) }; login(token, mockUser);
+           const userInfo = { ...meRes.data.data, roles: meRes.data.data.roles || [] };
+           login(token, userInfo);
            navigate('/');
         } else {
            useUserStore.getState().logout();
@@ -71,13 +72,9 @@ const Login: React.FC = () => {
           if (pollTimerRef.current !== null) clearInterval(pollTimerRef.current);
           
           const token = data.token!;
-          const mockUser = { ...data.userInfo };
-          if (!mockUser.roles) mockUser.roles = [];
-          if (!mockUser.roles.find((r: any) => r.code === 'SUPER_ADMIN')) {
-            mockUser.roles.push({ id: 1, name: '超级管理员', code: 'SUPER_ADMIN', scope: 'global' });
-          }
+          const userInfo = { ...data.userInfo, roles: data.userInfo?.roles || [] };
           
-          login(token, mockUser);
+          login(token, userInfo);
           Message.success('登录成功');
           navigate('/');
         } else if (data.status === 'EXPIRED') {

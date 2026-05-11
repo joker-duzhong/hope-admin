@@ -12,11 +12,15 @@ interface AuthProps {
 export const Auth: React.FC<AuthProps> = ({ allowedRoles, children }) => {
   const { userInfo } = useUserStore();
 
-  if (!userInfo || !userInfo.roles) {
+  if (!userInfo) {
     return null;
   }
 
-  const hasRole = userInfo.roles.some((role) => allowedRoles.includes(role.code || role.name));
+  if (userInfo.is_superuser) {
+    return <>{children}</>;
+  }
+
+  const hasRole = userInfo.roles?.some((role) => allowedRoles.includes(role.code || role.name));
 
   return hasRole ? <>{children}</> : null;
 };
