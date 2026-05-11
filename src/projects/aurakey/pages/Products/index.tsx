@@ -5,6 +5,10 @@ import { getAurakeyProducts, deleteAurakeyProduct } from "../../api";
 import ProductFormModal from "../../components/ProductFormModal";
 import type { AurakeyProduct } from "../../types";
 
+function formatValidDays(value: number | null) {
+  return value ? `${value} 天` : "系统默认";
+}
+
 export default function AurakeyProductsPage() {
   const [data, setData] = useState<AurakeyProduct[]>([]);
   const [loading, setLoading] = useState(false);
@@ -102,10 +106,32 @@ export default function AurakeyProductsPage() {
       render: (value: number) => (value > 0 ? `+${value}` : "-"),
     },
     {
+      title: "会员权益",
+      width: 180,
+      render: (_: unknown, record: AurakeyProduct) => {
+        if (record.type !== "vip") return "-";
+
+        return (
+          <Space size="mini">
+            <span>{record.vip_type || "会员"}</span>
+            <Tag color="green" size="small">
+              Lv.{record.vip_level || 0}
+            </Tag>
+          </Space>
+        );
+      },
+    },
+    {
+      title: "权益有效期",
+      dataIndex: "valid_days",
+      width: 120,
+      render: formatValidDays,
+    },
+    {
       title: "创建时间",
       dataIndex: "created_at",
       width: 180,
-      render: (value: string) => new Date(value).toLocaleString("zh-CN"),
+      render: (value?: string) => (value ? new Date(value).toLocaleString("zh-CN") : "-"),
     },
     {
       title: "操作",
@@ -163,7 +189,7 @@ export default function AurakeyProductsPage() {
           data={data}
           pagination={false}
           border
-          scroll={{ x: 1200 }}
+          scroll={{ x: 1500 }}
         />
       </Spin>
       <ProductFormModal

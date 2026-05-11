@@ -85,6 +85,26 @@ export interface AurakeyAdminMutationResult {
   is_success?: boolean;
 }
 
+export interface AurakeySystemConfig {
+  register_reward_points: number;
+  daily_sign_in_reward_points: number;
+  invite_reward_points: number;
+  default_vip_valid_days: number;
+  default_point_pack_valid_days: number | null;
+  daily_free_points_reset_hour: number;
+  custom: Record<string, unknown>;
+}
+
+export interface AurakeySystemConfigUpdatePayload {
+  register_reward_points?: number | null;
+  daily_sign_in_reward_points?: number | null;
+  invite_reward_points?: number | null;
+  default_vip_valid_days?: number | null;
+  default_point_pack_valid_days?: number | null;
+  daily_free_points_reset_hour?: number | null;
+  custom?: Record<string, unknown> | null;
+}
+
 // ============ C端 API 类型定义 ============
 
 // 画廊相关
@@ -124,8 +144,11 @@ export interface AurakeyProduct {
   point_amount: number;
   bonus_amount: number;
   tag: string | null;
-  created_at: string;
-  updated_at: string;
+  vip_type: string | null;
+  vip_level: number;
+  valid_days: number | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface AurakeyProductCreatePayload {
@@ -133,9 +156,12 @@ export interface AurakeyProductCreatePayload {
   name: string;
   price: number;
   original_price?: number | null;
-  point_amount: number;
-  bonus_amount: number;
+  point_amount?: number;
+  bonus_amount?: number;
   tag?: string | null;
+  vip_type?: string | null;
+  vip_level?: number;
+  valid_days?: number | null;
 }
 
 export interface AurakeyProductUpdatePayload extends AurakeyProductCreatePayload {}

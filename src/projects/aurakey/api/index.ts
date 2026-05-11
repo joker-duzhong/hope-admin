@@ -19,6 +19,8 @@ import type {
   AurakeyProduct,
   AurakeyProductCreatePayload,
   AurakeyProductUpdatePayload,
+  AurakeySystemConfig,
+  AurakeySystemConfigUpdatePayload,
 } from "../types";
 
 const versionV1 = "/api/v1";
@@ -63,6 +65,14 @@ export const getAurakeyOptionRatios = () => {
 
 export const createAurakeyOptionRatio = (payload: AurakeyAdminOptionRatioPayload) => {
   return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/task/options/ratios`, payload);
+};
+
+export const getAurakeyAdminSystemConfig = () => {
+  return request.get<ApiResponse<AurakeySystemConfig>>(`${adminBase}/system/config`);
+};
+
+export const updateAurakeyAdminSystemConfig = (payload: AurakeySystemConfigUpdatePayload) => {
+  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/system/config`, payload);
 };
 
 // ============ C\u7aef API \u51fd\u6570 ============
