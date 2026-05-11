@@ -59,8 +59,6 @@ export default function ProductFormModal({ visible, mode, product, onClose, onSu
     if (payload.type === 'vip') {
       return {
         ...payload,
-        point_amount: 0,
-        bonus_amount: 0,
         vip_type: payload.vip_type || null,
       };
     }
@@ -157,14 +155,14 @@ export default function ProductFormModal({ visible, mode, product, onClose, onSu
           label="算力点数"
           rules={productType === 'point_pack' ? [{ required: true, message: '请输入算力点数' }] : undefined}
         >
-          <InputNumber placeholder="例如：100" min={0} disabled={productType === 'vip'} />
+          <InputNumber placeholder="例如：100" min={0} />
         </Form.Item>
 
         <Form.Item
           field="bonus_amount"
           label="赠送算力"
         >
-          <InputNumber placeholder="例如：20" min={0} disabled={productType === 'vip'} />
+          <InputNumber placeholder="例如：20" min={0} />
         </Form.Item>
 
         {productType === 'vip' && (
