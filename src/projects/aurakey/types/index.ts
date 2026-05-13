@@ -48,6 +48,85 @@ export interface AurakeyAdminGalleryCategoryPayload {
   sort: number;
 }
 
+export type AurakeyAdminGalleryPublishStatus = 'approved' | 'blocked';
+
+export interface AurakeyAdminGalleryListParams {
+  page?: number;
+  pageSize?: number;
+  publishStatus?: AurakeyAdminGalleryPublishStatus;
+  isPublished?: boolean;
+  categoryId?: string;
+  userId?: string;
+  keyword?: string;
+}
+
+export interface AurakeyAdminGalleryUser {
+  user_id: string;
+  username?: string | null;
+  nickname?: string | null;
+  avatar?: string | null;
+}
+
+export interface AurakeyAdminGalleryItem {
+  task_id: string;
+  user: AurakeyAdminGalleryUser;
+  image_url?: string | null;
+  thumb_url?: string | null;
+  prompt: string;
+  model_name?: string | null;
+  aspect_ratio?: string | null;
+  status: string;
+  cost: number;
+  is_published: boolean;
+  publish_status: AurakeyAdminGalleryPublishStatus;
+  category_id?: string | null;
+  like_count: number;
+  view_count: number;
+  published_at?: number | null;
+  created_at?: number | null;
+}
+
+export interface AurakeyAdminGalleryListResponse {
+  items: AurakeyAdminGalleryItem[];
+  total: number;
+  page: number;
+  page_size: number;
+  total_pages: number;
+}
+
+export interface AurakeyAdminGalleryPublishPayload {
+  is_published: boolean;
+  category_id?: string | null;
+}
+
+export interface AurakeyAdminGalleryStatusPayload {
+  publish_status: AurakeyAdminGalleryPublishStatus;
+}
+
+export interface AurakeyAdminGalleryPublishState {
+  task_id: string;
+  is_published: boolean;
+  publish_status: AurakeyAdminGalleryPublishStatus;
+  category_id?: string | null;
+  published_at?: number | null;
+}
+
+export interface AurakeyAdminGalleryBatchPublishPayload extends AurakeyAdminGalleryPublishPayload {
+  task_ids: string[];
+}
+
+export interface AurakeyAdminGalleryBatchFailedItem {
+  task_id: string;
+  reason: string;
+}
+
+export interface AurakeyAdminGalleryBatchPublishResponse {
+  updated_count: number;
+  failed_count: number;
+  items: AurakeyAdminGalleryPublishState[];
+  failed_items?: AurakeyAdminGalleryBatchFailedItem[];
+}
+
 export type AurakeyAdminOptionStatus = 'on' | 'off';
 
 export interface AurakeyAdminOptionModel {

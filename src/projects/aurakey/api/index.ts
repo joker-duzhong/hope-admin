@@ -3,8 +3,15 @@ import type { ApiResponse } from "@/core/types";
 import type {
   AurakeyAdminAdjustBalancePayload,
   AurakeyAdminAdjustBalanceResult,
+  AurakeyAdminGalleryBatchPublishPayload,
+  AurakeyAdminGalleryBatchPublishResponse,
   AurakeyAdminGalleryCategory,
   AurakeyAdminGalleryCategoryPayload,
+  AurakeyAdminGalleryListParams,
+  AurakeyAdminGalleryListResponse,
+  AurakeyAdminGalleryPublishPayload,
+  AurakeyAdminGalleryPublishState,
+  AurakeyAdminGalleryStatusPayload,
   AurakeyAdminMutationResult,
   AurakeyAdminOptionModel,
   AurakeyAdminOptionModelPayload,
@@ -49,6 +56,24 @@ export const getAurakeyGalleryCategories = () => {
 
 export const createAurakeyGalleryCategory = (payload: AurakeyAdminGalleryCategoryPayload) => {
   return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/gallery/categories`, payload);
+};
+
+export const getAurakeyAdminGalleryList = (params: AurakeyAdminGalleryListParams) => {
+  return request.get<ApiResponse<AurakeyAdminGalleryListResponse>>(`${adminBase}/gallery/list`, {
+    params,
+  });
+};
+
+export const updateAurakeyAdminGalleryPublish = (taskId: string, payload: AurakeyAdminGalleryPublishPayload) => {
+  return request.put<ApiResponse<AurakeyAdminGalleryPublishState>>(`${adminBase}/gallery/${taskId}/publish`, payload);
+};
+
+export const batchUpdateAurakeyAdminGalleryPublish = (payload: AurakeyAdminGalleryBatchPublishPayload) => {
+  return request.put<ApiResponse<AurakeyAdminGalleryBatchPublishResponse>>(`${adminBase}/gallery/publish/batch`, payload);
+};
+
+export const updateAurakeyAdminGalleryStatus = (taskId: string, payload: AurakeyAdminGalleryStatusPayload) => {
+  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/gallery/${taskId}/status`, payload);
 };
 
 export const getAurakeyOptionModels = () => {
