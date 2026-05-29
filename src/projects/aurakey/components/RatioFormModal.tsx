@@ -1,8 +1,11 @@
+import { useEffect } from 'react';
 import { Form, Input, InputNumber, Modal, Select } from '@arco-design/web-react';
-import type { AurakeyAdminOptionRatioPayload } from '../types';
+import type { AurakeyAdminOptionRatio, AurakeyAdminOptionRatioPayload } from '../types';
 
 interface RatioFormModalProps {
   visible: boolean;
+  mode: 'create' | 'edit';
+  ratio?: AurakeyAdminOptionRatio;
   confirmLoading?: boolean;
   onCancel: () => void;
   onSubmit: (values: AurakeyAdminOptionRatioPayload) => Promise<void>;
@@ -10,11 +13,29 @@ interface RatioFormModalProps {
 
 export default function RatioFormModal({
   visible,
+  mode,
+  ratio,
   confirmLoading,
   onCancel,
   onSubmit,
 }: RatioFormModalProps) {
   const [form] = Form.useForm<AurakeyAdminOptionRatioPayload>();
+
+  useEffect(() => {
+    if (!visible) return;
+
+    if (mode === 'edit' && ratio) {
+      form.setFieldsValue({
+        ratio: ratio.ratio,
+        sort: ratio.sort,
+        status: ratio.status,
+      });
+      return;
+    }
+
+    form.resetFields();
+    form.setFieldsValue({ sort: 0, status: 'on' });
+  }, [visible, mode, ratio, form]);
 
   const handleOk = async () => {
     const values = await form.validate();
@@ -24,7 +45,7 @@ export default function RatioFormModal({
 
   return (
     <Modal
-      title="新增宽高比"
+      title={mode === 'create' ? '新增宽高比' : '编辑宽高比'}
       visible={visible}
       onOk={handleOk}
       onCancel={() => {
@@ -34,7 +55,7 @@ export default function RatioFormModal({
       confirmLoading={confirmLoading}
       unmountOnExit
     >
-      <Form form={form} layout="vertical" initialValues={{ sort: 0, status: 'on' }}>
+      <Form form={form} layout="vertical">
         <Form.Item field="ratio" label="宽高比" rules={[{ required: true, message: '请输入宽高比' }]}>
           <Input placeholder="例如：16:9" maxLength={20} />
         </Form.Item>

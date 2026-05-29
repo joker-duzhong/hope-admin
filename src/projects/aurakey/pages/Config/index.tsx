@@ -1,17 +1,21 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Badge, Button, Card, Form, Input, InputNumber, Message, Space, Spin, Table, Tabs, Typography } from '@arco-design/web-react';
-import { IconEdit, IconPlus, IconRefresh, IconSave } from '@arco-design/web-react/icon';
+import { Badge, Button, Card, Form, Input, InputNumber, Message, Popconfirm, Space, Spin, Table, Tabs, Typography } from '@arco-design/web-react';
+import { IconDelete, IconEdit, IconPlus, IconRefresh, IconSave } from '@arco-design/web-react/icon';
 import type { TableColumnProps } from '@arco-design/web-react';
 import { useSearchParams } from 'react-router-dom';
 import {
   createAurakeyGalleryCategory,
   createAurakeyOptionModel,
   createAurakeyOptionRatio,
+  deleteAurakeyGalleryCategory,
+  deleteAurakeyOptionRatio,
   getAurakeyAdminSystemConfig,
   getAurakeyGalleryCategories,
   getAurakeyOptionModels,
   getAurakeyOptionRatios,
   updateAurakeyAdminSystemConfig,
+  updateAurakeyGalleryCategory,
+  updateAurakeyOptionRatio,
 } from '../../api';
 import CategoryFormModal from '../../components/CategoryFormModal';
 import ModelFormModal from '../../components/ModelFormModal';
@@ -73,11 +77,16 @@ export default function AurakeyConfigPage() {
   const [ratios, setRatios] = useState<AurakeyAdminOptionRatio[]>([]);
   const [loading, setLoading] = useState(false);
   const [categoryVisible, setCategoryVisible] = useState(false);
+  const [categoryMode, setCategoryMode] = useState<'create' | 'edit'>('create');
+  const [selectedCategory, setSelectedCategory] = useState<AurakeyAdminGalleryCategory | undefined>();
   const [modelVisible, setModelVisible] = useState(false);
   const [modelMode, setModelMode] = useState<'create' | 'edit'>('create');
   const [selectedModel, setSelectedModel] = useState<AurakeyAdminOptionModel | undefined>();
   const [ratioVisible, setRatioVisible] = useState(false);
+  const [ratioMode, setRatioMode] = useState<'create' | 'edit'>('create');
+  const [selectedRatio, setSelectedRatio] = useState<AurakeyAdminOptionRatio | undefined>();
   const [submitLoading, setSubmitLoading] = useState<'category' | 'model' | 'ratio' | 'system' | null>(null);
+  const [deleteLoading, setDeleteLoading] = useState<string | null>(null);
 
   const tabParam = searchParams.get('tab');
   const activeTab: ConfigTabKey = isConfigTabKey(tabParam) ? tabParam : 'category';
@@ -87,8 +96,39 @@ export default function AurakeyConfigPage() {
       { title: '分类 ID', dataIndex: 'id', ellipsis: true },
       { title: '分类名称', dataIndex: 'name' },
       { title: '排序值', dataIndex: 'sort', width: 120 },
+      {
+        title: '操作',
+        width: 220,
+        render: (_value, record) => (
+          <Space size="mini">
+            <Button
+              type="text"
+              size="small"
+              icon={<IconEdit />}
+              onClick={() => handleOpenEditCategory(record)}
+            >
+              编辑
+            </Button>
+            <Popconfirm
+              title="确定删除该分类？"
+              content="删除后无法恢复"
+              onOk={() => handleDeleteCategory(record.id)}
+            >
+              <Button
+                type="text"
+                size="small"
+                status="danger"
+                icon={<IconDelete />}
+                loading={deleteLoading === `category-${record.id}`}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          </Space>
+        ),
+      },
     ],
-    []
+    [deleteLoading]
   );
 
   const modelColumns: TableColumnProps<AurakeyAdminOptionModel>[] = useMemo(
@@ -142,8 +182,39 @@ export default function AurakeyConfigPage() {
         width: 120,
         render: renderStatus,
       },
+      {
+        title: '操作',
+        width: 220,
+        render: (_value, record) => (
+          <Space size="mini">
+            <Button
+              type="text"
+              size="small"
+              icon={<IconEdit />}
+              onClick={() => handleOpenEditRatio(record)}
+            >
+              编辑
+            </Button>
+            <Popconfirm
+              title="确定删除该宽高比？"
+              content="删除后无法恢复"
+              onOk={() => handleDeleteRatio(record.id)}
+            >
+              <Button
+                type="text"
+                size="small"
+                status="danger"
+                icon={<IconDelete />}
+                loading={deleteLoading === `ratio-${record.id}`}
+              >
+                删除
+              </Button>
+            </Popconfirm>
+          </Space>
+        ),
+      },
     ],
-    []
+    [deleteLoading]
   );
 
   const loadData = async () => {
@@ -193,15 +264,48 @@ export default function AurakeyConfigPage() {
     setSearchParams(nextParams, { replace: true });
   };
 
-  const handleCreateCategory = async (values: AurakeyAdminGalleryCategoryPayload) => {
+  const handleSubmitCategory = async (values: AurakeyAdminGalleryCategoryPayload) => {
     setSubmitLoading('category');
     try {
-      await createAurakeyGalleryCategory(values);
-      Message.success('分类已创建');
+      if (categoryMode === 'edit' && selectedCategory) {
+        await updateAurakeyGalleryCategory(selectedCategory.id, values);
+      } else {
+        await createAurakeyGalleryCategory(values);
+      }
+      Message.success(categoryMode === 'edit' ? '分类已更新' : '分类已创建');
       setCategoryVisible(false);
+      setSelectedCategory(undefined);
       await loadData();
     } finally {
       setSubmitLoading(null);
+    }
+  };
+
+  const handleOpenCreateCategory = () => {
+    setCategoryMode('create');
+    setSelectedCategory(undefined);
+    setCategoryVisible(true);
+  };
+
+  const handleOpenEditCategory = (category: AurakeyAdminGalleryCategory) => {
+    setCategoryMode('edit');
+    setSelectedCategory(category);
+    setCategoryVisible(true);
+  };
+
+  const handleCloseCategoryModal = () => {
+    setCategoryVisible(false);
+    setSelectedCategory(undefined);
+  };
+
+  const handleDeleteCategory = async (id: string) => {
+    setDeleteLoading(`category-${id}`);
+    try {
+      await deleteAurakeyGalleryCategory(id);
+      Message.success('分类已删除');
+      await loadData();
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -229,15 +333,48 @@ export default function AurakeyConfigPage() {
     setSelectedModel(undefined);
   };
 
-  const handleCreateRatio = async (values: AurakeyAdminOptionRatioPayload) => {
+  const handleSubmitRatio = async (values: AurakeyAdminOptionRatioPayload) => {
     setSubmitLoading('ratio');
     try {
-      await createAurakeyOptionRatio(values);
-      Message.success('宽高比已创建');
+      if (ratioMode === 'edit' && selectedRatio) {
+        await updateAurakeyOptionRatio(selectedRatio.id, values);
+      } else {
+        await createAurakeyOptionRatio(values);
+      }
+      Message.success(ratioMode === 'edit' ? '宽高比已更新' : '宽高比已创建');
       setRatioVisible(false);
+      setSelectedRatio(undefined);
       await loadData();
     } finally {
       setSubmitLoading(null);
+    }
+  };
+
+  const handleOpenCreateRatio = () => {
+    setRatioMode('create');
+    setSelectedRatio(undefined);
+    setRatioVisible(true);
+  };
+
+  const handleOpenEditRatio = (ratio: AurakeyAdminOptionRatio) => {
+    setRatioMode('edit');
+    setSelectedRatio(ratio);
+    setRatioVisible(true);
+  };
+
+  const handleCloseRatioModal = () => {
+    setRatioVisible(false);
+    setSelectedRatio(undefined);
+  };
+
+  const handleDeleteRatio = async (id: string) => {
+    setDeleteLoading(`ratio-${id}`);
+    try {
+      await deleteAurakeyOptionRatio(id);
+      Message.success('宽高比已删除');
+      await loadData();
+    } finally {
+      setDeleteLoading(null);
     }
   };
 
@@ -310,7 +447,7 @@ export default function AurakeyConfigPage() {
                 title="图库分类"
                 bordered={false}
                 extra={
-                  <Button type="primary" icon={<IconPlus />} onClick={() => setCategoryVisible(true)}>
+                  <Button type="primary" icon={<IconPlus />} onClick={handleOpenCreateCategory}>
                     新增分类
                   </Button>
                 }
@@ -338,7 +475,7 @@ export default function AurakeyConfigPage() {
                 title="宽高比配置"
                 bordered={false}
                 extra={
-                  <Button type="primary" icon={<IconPlus />} onClick={() => setRatioVisible(true)}>
+                  <Button type="primary" icon={<IconPlus />} onClick={handleOpenCreateRatio}>
                     新增宽高比
                   </Button>
                 }
@@ -416,9 +553,11 @@ export default function AurakeyConfigPage() {
 
       <CategoryFormModal
         visible={categoryVisible}
+        mode={categoryMode}
+        category={selectedCategory}
         confirmLoading={submitLoading === 'category'}
-        onCancel={() => setCategoryVisible(false)}
-        onSubmit={handleCreateCategory}
+        onCancel={handleCloseCategoryModal}
+        onSubmit={handleSubmitCategory}
       />
       <ModelFormModal
         visible={modelVisible}
@@ -430,9 +569,11 @@ export default function AurakeyConfigPage() {
       />
       <RatioFormModal
         visible={ratioVisible}
+        mode={ratioMode}
+        ratio={selectedRatio}
         confirmLoading={submitLoading === 'ratio'}
-        onCancel={() => setRatioVisible(false)}
-        onSubmit={handleCreateRatio}
+        onCancel={handleCloseRatioModal}
+        onSubmit={handleSubmitRatio}
       />
     </Space>
   );

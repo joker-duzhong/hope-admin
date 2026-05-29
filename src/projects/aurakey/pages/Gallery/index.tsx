@@ -1,13 +1,16 @@
 import { useEffect, useMemo, useState } from "react";
-import { Button, Card, Form, Image, Input, Message, Modal, Pagination, Popconfirm, Select, Space, Spin, Table, Tag, Typography } from "@arco-design/web-react";
+import { Button, Card, Form, Image, Input, Message, Modal, Pagination, Popconfirm, Select, Space, Spin, Switch, Table, Tag, Typography } from "@arco-design/web-react";
 import { IconCheck, IconClose, IconEdit, IconEye, IconEyeInvisible, IconRefresh, IconSearch, IconStop } from "@arco-design/web-react/icon";
 import type { TableColumnProps } from "@arco-design/web-react";
-import { batchUpdateAurakeyAdminGalleryPublish, getAurakeyAdminGalleryList, getAurakeyGalleryCategories, updateAurakeyAdminGalleryPublish, updateAurakeyAdminGalleryStatus } from "../../api";
-import type { AurakeyAdminGalleryCategory, AurakeyAdminGalleryItem, AurakeyAdminGalleryListParams, AurakeyAdminGalleryPublishStatus } from "../../types";
+import { batchUpdateAurakeyAdminGalleryPublish, getAurakeyAdminGalleryList, getAurakeyGalleryCategories, updateAurakeyAdminGalleryStatus, updateAurakeyAdminGalleryTask } from "../../api";
+import type { AurakeyAdminGalleryCategory, AurakeyAdminGalleryItem, AurakeyAdminGalleryListParams, AurakeyAdminGalleryPublishStatus, AurakeyAdminGalleryTaskUpdatePayload } from "../../types";
 
 type GalleryFilterValues = Omit<Pick<AurakeyAdminGalleryListParams, "publishStatus" | "isPublished" | "categoryId" | "userId" | "keyword">, "isPublished"> & {
   isPublished?: "true" | "false";
 };
+
+type GalleryEditFormValues = Required<Pick<AurakeyAdminGalleryTaskUpdatePayload, "is_published">> &
+  Pick<AurakeyAdminGalleryTaskUpdatePayload, "category_id" | "show_title" | "template_prompt">;
 
 const FormItem = Form.Item;
 const PUBLISH_STATUS_OPTIONS: { label: string; value: AurakeyAdminGalleryPublishStatus; color: string }[] = [
@@ -62,9 +65,9 @@ export default function AurakeyGalleryPage() {
   const [filters, setFilters] = useState<Omit<AurakeyAdminGalleryListParams, "page" | "pageSize">>({});
   const [loading, setLoading] = useState(false);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
-  const [categoryEditVisible, setCategoryEditVisible] = useState(false);
+  const [galleryEditVisible, setGalleryEditVisible] = useState(false);
   const [selectedGalleryItem, setSelectedGalleryItem] = useState<AurakeyAdminGalleryItem | null>(null);
-  const [categoryEditForm] = Form.useForm<{ category_id?: string | null }>();
+  const [galleryEditForm] = Form.useForm<GalleryEditFormValues>();
   const [selectedRowKeys, setSelectedRowKeys] = useState<string[]>([]);
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(20);
@@ -118,21 +121,6 @@ export default function AurakeyGalleryPage() {
     await loadData(1, pageSize, {});
   };
 
-  const handlePublishChange = async (record: AurakeyAdminGalleryItem, isPublished: boolean) => {
-    const actionKey = `publish-${record.task_id}`;
-    setActionLoading(actionKey);
-    try {
-      await updateAurakeyAdminGalleryPublish(record.task_id, {
-        is_published: isPublished,
-        category_id: record.category_id ?? null,
-      });
-      Message.success(isPublished ? "作品已公开" : "作品已取消公开");
-      await loadData(page, pageSize);
-    } finally {
-      setActionLoading(null);
-    }
-  };
-
   const handleStatusChange = async (record: AurakeyAdminGalleryItem, publishStatus: AurakeyAdminGalleryPublishStatus) => {
     const actionKey = `status-${record.task_id}`;
     setActionLoading(actionKey);
@@ -145,39 +133,38 @@ export default function AurakeyGalleryPage() {
     }
   };
 
-  const handleOpenCategoryEdit = (record: AurakeyAdminGalleryItem) => {
+  const handleOpenGalleryEdit = (record: AurakeyAdminGalleryItem) => {
     setSelectedGalleryItem(record);
-    setCategoryEditVisible(true);
-    categoryEditForm.setFieldsValue({
-      category_id: record.category_id ?? undefined,
-    });
+    setGalleryEditVisible(true);
   };
 
-  const handleCloseCategoryEdit = () => {
-    setCategoryEditVisible(false);
+  const handleCloseGalleryEdit = () => {
+    setGalleryEditVisible(false);
     setSelectedGalleryItem(null);
-    categoryEditForm.resetFields();
+    galleryEditForm.resetFields();
   };
 
-  const handleSubmitCategoryEdit = async () => {
+  const handleSubmitGalleryEdit = async () => {
     if (!selectedGalleryItem) return;
 
-    let values: { category_id?: string | null };
+    let values: GalleryEditFormValues;
     try {
-      values = await categoryEditForm.validate();
+      values = await galleryEditForm.validate();
     } catch {
       return;
     }
 
-    const actionKey = `category-${selectedGalleryItem.task_id}`;
+    const actionKey = `gallery-${selectedGalleryItem.task_id}`;
     setActionLoading(actionKey);
     try {
-      await updateAurakeyAdminGalleryPublish(selectedGalleryItem.task_id, {
-        is_published: selectedGalleryItem.is_published,
+      await updateAurakeyAdminGalleryTask(selectedGalleryItem.task_id, {
+        is_published: values.is_published,
         category_id: values.category_id ?? null,
+        show_title: values.show_title?.trim() || null,
+        template_prompt: values.template_prompt?.trim() || null,
       });
-      Message.success("作品分类已更新");
-      handleCloseCategoryEdit();
+      Message.success("作品信息已更新");
+      handleCloseGalleryEdit();
       await loadData(page, pageSize);
     } finally {
       setActionLoading(null);
@@ -222,6 +209,17 @@ export default function AurakeyGalleryPage() {
       setActionLoading(null);
     }
   };
+
+  useEffect(() => {
+    if (!galleryEditVisible || !selectedGalleryItem) return;
+
+    galleryEditForm.setFieldsValue({
+      is_published: selectedGalleryItem.is_published,
+      category_id: selectedGalleryItem.category_id ?? undefined,
+      show_title: selectedGalleryItem.show_title ?? "",
+      template_prompt: selectedGalleryItem.template_prompt ?? "",
+    });
+  }, [galleryEditVisible, selectedGalleryItem, galleryEditForm]);
 
   const columns: TableColumnProps<AurakeyAdminGalleryItem>[] = useMemo(
     () => [
@@ -275,10 +273,23 @@ export default function AurakeyGalleryPage() {
         ),
       },
       {
-        title: "提示词",
+        title: "展示信息",
         dataIndex: "prompt",
-        width: 260,
-        ellipsis: true,
+        width: 300,
+        render: (_value, record) => (
+          <Space
+            direction="vertical"
+            size={2}
+          >
+            <Typography.Text ellipsis>{record.show_title || "-"}</Typography.Text>
+            <Typography.Text
+              type="secondary"
+              ellipsis
+            >
+              {record.template_prompt || record.prompt}
+            </Typography.Text>
+          </Space>
+        ),
       },
       {
         title: "模型 / 比例",
@@ -344,10 +355,9 @@ export default function AurakeyGalleryPage() {
       },
       {
         title: "操作",
-        width: 340,
+        width: 220,
         fixed: "right",
         render: (_value, record) => {
-          const nextPublished = !record.is_published;
           const nextStatus: AurakeyAdminGalleryPublishStatus = record.publish_status === "approved" ? "blocked" : "approved";
 
           return (
@@ -355,7 +365,7 @@ export default function AurakeyGalleryPage() {
               size="mini"
               wrap
             >
-              <Popconfirm
+              {/* <Popconfirm
                 title={nextPublished ? "确定公开作品？" : "确定取消公开？"}
                 onOk={() => handlePublishChange(record, nextPublished)}
               >
@@ -367,7 +377,7 @@ export default function AurakeyGalleryPage() {
                 >
                   {nextPublished ? "公开" : "取消公开"}
                 </Button>
-              </Popconfirm>
+              </Popconfirm> */}
               <Popconfirm
                 title={nextStatus === "approved" ? "确定通过作品？" : "确定屏蔽作品？"}
                 onOk={() => handleStatusChange(record, nextStatus)}
@@ -386,10 +396,10 @@ export default function AurakeyGalleryPage() {
                 type="text"
                 size="small"
                 icon={<IconEdit />}
-                loading={actionLoading === `category-${record.task_id}`}
-                onClick={() => handleOpenCategoryEdit(record)}
+                loading={actionLoading === `gallery-${record.task_id}`}
+                onClick={() => handleOpenGalleryEdit(record)}
               >
-                编辑分类
+                编辑作品
               </Button>
             </Space>
           );
@@ -554,16 +564,26 @@ export default function AurakeyGalleryPage() {
       </Spin>
 
       <Modal
-        title="编辑作品分类"
-        visible={categoryEditVisible}
-        onOk={() => void handleSubmitCategoryEdit()}
-        onCancel={handleCloseCategoryEdit}
+        title="编辑作品"
+        visible={galleryEditVisible}
+        onOk={() => void handleSubmitGalleryEdit()}
+        onCancel={handleCloseGalleryEdit}
         unmountOnExit
       >
         <Form
-          form={categoryEditForm}
+          form={galleryEditForm}
           layout="vertical"
         >
+          <Form.Item
+            field="is_published"
+            label="公开状态"
+            triggerPropName="checked"
+          >
+            <Switch
+              checkedText="公开"
+              uncheckedText="未公开"
+            />
+          </Form.Item>
           <Form.Item
             field="category_id"
             label="作品分类"
@@ -581,6 +601,27 @@ export default function AurakeyGalleryPage() {
                 </Select.Option>
               ))}
             </Select>
+          </Form.Item>
+          <Form.Item
+            field="show_title"
+            label="展示标题"
+          >
+            <Input
+              placeholder="请输入展示标题"
+              maxLength={80}
+              allowClear
+            />
+          </Form.Item>
+          <Form.Item
+            field="template_prompt"
+            label="模板提示词"
+          >
+            <Input.TextArea
+              placeholder="请输入模板提示词"
+              maxLength={1000}
+              showWordLimit
+              autoSize={{ minRows: 4, maxRows: 8 }}
+            />
           </Form.Item>
         </Form>
       </Modal>

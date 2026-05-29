@@ -87,6 +87,8 @@ export interface AurakeyAdminGalleryItem {
   user: AurakeyAdminGalleryUser;
   resource?: ResourceInfo;
   prompt: string;
+  show_title?: string | null;
+  template_prompt?: string | null;
   model_name?: string | null;
   aspect_ratio?: string | null;
   status: string;
@@ -113,6 +115,13 @@ export interface AurakeyAdminGalleryPublishPayload {
   category_id?: string | null;
 }
 
+export interface AurakeyAdminGalleryTaskUpdatePayload {
+  is_published?: boolean | null;
+  category_id?: string | null;
+  show_title?: string | null;
+  template_prompt?: string | null;
+}
+
 export interface AurakeyAdminGalleryStatusPayload {
   publish_status: AurakeyAdminGalleryPublishStatus;
 }
@@ -123,6 +132,8 @@ export interface AurakeyAdminGalleryPublishState {
   publish_status: AurakeyAdminGalleryPublishStatus;
   category_id?: string | null;
   published_at?: number | null;
+  show_title?: string | null;
+  template_prompt?: string | null;
 }
 
 export interface AurakeyAdminGalleryBatchPublishPayload extends AurakeyAdminGalleryPublishPayload {
@@ -215,6 +226,9 @@ export interface AurakeyGalleryItem {
   like_count: number;
   is_liked: boolean;
   view_count: number;
+  prompt?: string;
+  show_title?: string | null;
+  template_prompt?: string | null;
 }
 
 export interface AurakeyGalleryListResponse {

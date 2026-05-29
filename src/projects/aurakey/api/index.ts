@@ -9,9 +9,9 @@ import type {
   AurakeyAdminGalleryCategoryPayload,
   AurakeyAdminGalleryListParams,
   AurakeyAdminGalleryListResponse,
-  AurakeyAdminGalleryPublishPayload,
   AurakeyAdminGalleryPublishState,
   AurakeyAdminGalleryStatusPayload,
+  AurakeyAdminGalleryTaskUpdatePayload,
   AurakeyAdminMutationResult,
   AurakeyAdminOptionModel,
   AurakeyAdminOptionModelPayload,
@@ -58,14 +58,22 @@ export const createAurakeyGalleryCategory = (payload: AurakeyAdminGalleryCategor
   return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/gallery/categories`, payload);
 };
 
+export const updateAurakeyGalleryCategory = (id: string, payload: AurakeyAdminGalleryCategoryPayload) => {
+  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/gallery/categories/${id}`, payload);
+};
+
+export const deleteAurakeyGalleryCategory = (id: string) => {
+  return request.delete<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/gallery/categories/${id}`);
+};
+
 export const getAurakeyAdminGalleryList = (params: AurakeyAdminGalleryListParams) => {
   return request.get<ApiResponse<AurakeyAdminGalleryListResponse>>(`${adminBase}/gallery/list`, {
     params,
   });
 };
 
-export const updateAurakeyAdminGalleryPublish = (taskId: string, payload: AurakeyAdminGalleryPublishPayload) => {
-  return request.put<ApiResponse<AurakeyAdminGalleryPublishState>>(`${adminBase}/gallery/${taskId}/publish`, payload);
+export const updateAurakeyAdminGalleryTask = (taskId: string, payload: AurakeyAdminGalleryTaskUpdatePayload) => {
+  return request.put<ApiResponse<AurakeyAdminGalleryPublishState>>(`${adminBase}/gallery/${taskId}`, payload);
 };
 
 export const batchUpdateAurakeyAdminGalleryPublish = (payload: AurakeyAdminGalleryBatchPublishPayload) => {
@@ -90,6 +98,14 @@ export const getAurakeyOptionRatios = () => {
 
 export const createAurakeyOptionRatio = (payload: AurakeyAdminOptionRatioPayload) => {
   return request.post<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/task/options/ratios`, payload);
+};
+
+export const updateAurakeyOptionRatio = (id: string, payload: AurakeyAdminOptionRatioPayload) => {
+  return request.put<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/task/options/ratios/${id}`, payload);
+};
+
+export const deleteAurakeyOptionRatio = (id: string) => {
+  return request.delete<ApiResponse<AurakeyAdminMutationResult>>(`${adminBase}/task/options/ratios/${id}`);
 };
 
 export const getAurakeyAdminSystemConfig = () => {
