@@ -1,8 +1,11 @@
+import { useEffect } from 'react';
 import { Form, Input, InputNumber, Modal, Select, Switch } from '@arco-design/web-react';
-import type { AurakeyAdminOptionModelPayload } from '../types';
+import type { AurakeyAdminOptionModel, AurakeyAdminOptionModelPayload } from '../types';
 
 interface ModelFormModalProps {
   visible: boolean;
+  mode: 'create' | 'edit';
+  model?: AurakeyAdminOptionModel;
   confirmLoading?: boolean;
   onCancel: () => void;
   onSubmit: (values: AurakeyAdminOptionModelPayload) => Promise<void>;
@@ -10,11 +13,35 @@ interface ModelFormModalProps {
 
 export default function ModelFormModal({
   visible,
+  mode,
+  model,
   confirmLoading,
   onCancel,
   onSubmit,
 }: ModelFormModalProps) {
   const [form] = Form.useForm<AurakeyAdminOptionModelPayload>();
+
+  useEffect(() => {
+    if (!visible) return;
+
+    if (mode === 'edit' && model) {
+      form.setFieldsValue({
+        model_id: model.model_id,
+        name: model.name,
+        cost: model.cost,
+        is_vip_only: model.is_vip_only,
+        status: model.status,
+      });
+      return;
+    }
+
+    form.resetFields();
+    form.setFieldsValue({
+      cost: 10,
+      is_vip_only: false,
+      status: 'on',
+    });
+  }, [visible, mode, model, form]);
 
   const handleOk = async () => {
     const values = await form.validate();
@@ -24,7 +51,7 @@ export default function ModelFormModal({
 
   return (
     <Modal
-      title="新增生图模型"
+      title={mode === 'create' ? '新增生图模型' : '编辑生图模型'}
       visible={visible}
       onOk={handleOk}
       onCancel={() => {
@@ -37,14 +64,9 @@ export default function ModelFormModal({
       <Form
         form={form}
         layout="vertical"
-        initialValues={{
-          cost: 10,
-          is_vip_only: false,
-          status: 'on',
-        }}
       >
         <Form.Item field="model_id" label="模型标识" rules={[{ required: true, message: '请输入模型标识' }]}>
-          <Input placeholder="例如：pro_v1" maxLength={60} />
+          <Input placeholder="例如：pro_v1" maxLength={60} disabled={mode === 'edit'} />
         </Form.Item>
         <Form.Item field="name" label="模型名称" rules={[{ required: true, message: '请输入模型名称' }]}>
           <Input placeholder="例如：专业版 v1.0" maxLength={60} />

@@ -17,7 +17,7 @@ export interface AurakeyAdminAdjustBalanceResult {
   balance_after: number;
 }
 
-export type AurakeyAdminUserStatus = 'normal' | 'banned';
+export type AurakeyAdminUserStatus = "normal" | "banned";
 
 export interface AurakeyAdminUserStatusPayload {
   status: AurakeyAdminUserStatus;
@@ -48,7 +48,7 @@ export interface AurakeyAdminGalleryCategoryPayload {
   sort: number;
 }
 
-export type AurakeyAdminGalleryPublishStatus = 'approved' | 'blocked';
+export type AurakeyAdminGalleryPublishStatus = "approved" | "blocked";
 
 export interface AurakeyAdminGalleryListParams {
   page?: number;
@@ -67,11 +67,25 @@ export interface AurakeyAdminGalleryUser {
   avatar?: string | null;
 }
 
+export interface ResourceInfo {
+  id: string;
+  name: string;
+  hash: string;
+  url: string;
+  thumb_url: string;
+  type: string;
+  size: number;
+  status: string;
+  scope: string;
+  owner: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface AurakeyAdminGalleryItem {
   task_id: string;
   user: AurakeyAdminGalleryUser;
-  image_url?: string | null;
-  thumb_url?: string | null;
+  resource?: ResourceInfo;
   prompt: string;
   model_name?: string | null;
   aspect_ratio?: string | null;
@@ -127,7 +141,7 @@ export interface AurakeyAdminGalleryBatchPublishResponse {
   failed_items?: AurakeyAdminGalleryBatchFailedItem[];
 }
 
-export type AurakeyAdminOptionStatus = 'on' | 'off';
+export type AurakeyAdminOptionStatus = "on" | "off";
 
 export interface AurakeyAdminOptionModel {
   id: string;
@@ -212,7 +226,7 @@ export interface AurakeyGalleryListResponse {
 }
 
 // 商品相关
-export type AurakeyProductType = 'point_pack' | 'vip';
+export type AurakeyProductType = "point_pack" | "vip";
 
 export interface AurakeyProduct {
   id: string;
@@ -243,7 +257,7 @@ export interface AurakeyProductCreatePayload {
   valid_days?: number | null;
 }
 
-export interface AurakeyProductUpdatePayload extends AurakeyProductCreatePayload {}
+export type AurakeyProductUpdatePayload = AurakeyProductCreatePayload;
 
 export interface AurakeyProductMutationResult {
   is_success: boolean;

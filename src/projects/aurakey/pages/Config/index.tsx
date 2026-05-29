@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Badge, Button, Card, Form, Input, InputNumber, Message, Space, Spin, Table, Tabs, Typography } from '@arco-design/web-react';
-import { IconPlus, IconRefresh, IconSave } from '@arco-design/web-react/icon';
+import { IconEdit, IconPlus, IconRefresh, IconSave } from '@arco-design/web-react/icon';
 import type { TableColumnProps } from '@arco-design/web-react';
 import { useSearchParams } from 'react-router-dom';
 import {
@@ -74,6 +74,8 @@ export default function AurakeyConfigPage() {
   const [loading, setLoading] = useState(false);
   const [categoryVisible, setCategoryVisible] = useState(false);
   const [modelVisible, setModelVisible] = useState(false);
+  const [modelMode, setModelMode] = useState<'create' | 'edit'>('create');
+  const [selectedModel, setSelectedModel] = useState<AurakeyAdminOptionModel | undefined>();
   const [ratioVisible, setRatioVisible] = useState(false);
   const [submitLoading, setSubmitLoading] = useState<'category' | 'model' | 'ratio' | 'system' | null>(null);
 
@@ -106,6 +108,24 @@ export default function AurakeyConfigPage() {
         dataIndex: 'status',
         width: 120,
         render: renderStatus,
+      },
+      {
+        title: '操作',
+        width: 100,
+        render: (_value, record) => (
+          <Button
+            type="text"
+            size="small"
+            icon={<IconEdit />}
+            onClick={() => {
+              setModelMode('edit');
+              setSelectedModel(record);
+              setModelVisible(true);
+            }}
+          >
+            编辑
+          </Button>
+        ),
       },
     ],
     []
@@ -189,12 +209,24 @@ export default function AurakeyConfigPage() {
     setSubmitLoading('model');
     try {
       await createAurakeyOptionModel(values);
-      Message.success('模型已创建');
+      Message.success(modelMode === 'create' ? '模型已创建' : '模型已更新');
       setModelVisible(false);
+      setSelectedModel(undefined);
       await loadData();
     } finally {
       setSubmitLoading(null);
     }
+  };
+
+  const handleOpenCreateModel = () => {
+    setModelMode('create');
+    setSelectedModel(undefined);
+    setModelVisible(true);
+  };
+
+  const handleCloseModelModal = () => {
+    setModelVisible(false);
+    setSelectedModel(undefined);
   };
 
   const handleCreateRatio = async (values: AurakeyAdminOptionRatioPayload) => {
@@ -292,7 +324,7 @@ export default function AurakeyConfigPage() {
                 title="生图模型"
                 bordered={false}
                 extra={
-                  <Button type="primary" icon={<IconPlus />} onClick={() => setModelVisible(true)}>
+                  <Button type="primary" icon={<IconPlus />} onClick={handleOpenCreateModel}>
                     新增模型
                   </Button>
                 }
@@ -390,8 +422,10 @@ export default function AurakeyConfigPage() {
       />
       <ModelFormModal
         visible={modelVisible}
+        mode={modelMode}
+        model={selectedModel}
         confirmLoading={submitLoading === 'model'}
-        onCancel={() => setModelVisible(false)}
+        onCancel={handleCloseModelModal}
         onSubmit={handleCreateModel}
       />
       <RatioFormModal
