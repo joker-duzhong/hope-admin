@@ -10,12 +10,13 @@ const Loading = () => <div>加载中...</div>;
 export const timelibraryModule: AppModule = {
   moduleMeta: {
     key: 'timelibrary',
+    appScope: 'hope_time_library',
     title: '时空图书馆',
     icon: <IconBook />,
   },
   routes: [
     {
-      element: <ProtectedRoute allowedRoles={['timelibrary_admin']} />,
+      element: <ProtectedRoute roleScope="hope_time_library" allowedRoles={['timelibrary_admin']} />,
       children: [
         {
           path: 'apps/timelibrary',

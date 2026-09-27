@@ -152,6 +152,47 @@ body, html {
   padding-bottom: 2px;
 }
 
+.hope-sidebar .hope-sidebar-module-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.hope-sidebar .hope-sidebar-module-title > span:nth-child(2) {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.hope-sidebar .hope-sidebar-module-title .arco-tag {
+  flex: 0 0 auto;
+  margin-left: auto;
+  color: var(--hope-text-secondary);
+  border-color: var(--hope-border-color);
+  background-color: transparent;
+}
+
+.hope-sidebar .hope-sidebar-off-shelf-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--hope-text-secondary);
+}
+
+.hope-sidebar .arco-menu-item.hope-sidebar-off-shelf-item,
+.hope-sidebar .arco-menu-item.hope-sidebar-off-shelf-item:hover {
+  color: var(--hope-text-secondary);
+  background-color: transparent;
+  cursor: not-allowed;
+  opacity: 0.62;
+}
+
+.hope-sidebar .hope-sidebar-off-shelf-item .arco-icon {
+  color: var(--hope-text-secondary);
+}
+
 /* Header Overrides */
 .hope-header {
   background-color: var(--hope-bg-card) !important;

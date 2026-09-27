@@ -47,6 +47,6 @@ export const freezeUserApi = (userId: string | number, is_active: boolean) => {
   return request.patch<ApiResponse<any>>(`/api/v1/admin/users/${userId}/freeze`, { is_active });
 };
 
-export const assignUserRolesApi = (userId: string | number, role_ids: number[]) => {
+export const assignUserRolesApi = (userId: string | number, role_ids: string[]) => {
   return request.put<ApiResponse<any>>(`/api/v1/admin/users/${userId}/roles`, { role_ids });
 };

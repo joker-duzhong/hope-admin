@@ -1,0 +1,273 @@
+import { createHotContext as __vite__createHotContext } from "/admin/@vite/client";import.meta.hot = __vite__createHotContext("/src/projects/aurakey/router.tsx");const lazy = __vite__cjsImport0_react["lazy"]; const Suspense = __vite__cjsImport0_react["Suspense"];const _jsxDEV = __vite__cjsImport4_react_jsxDevRuntime["jsxDEV"];import __vite__cjsImport0_react from "/admin/node_modules/.vite/deps/react.js?v=480ecf3b";
+import { Navigate } from "/admin/node_modules/.vite/deps/react-router-dom.js?v=480ecf3b";
+import { IconSettings, IconUserGroup, IconFile, IconApps, IconImage, IconList } from "/admin/node_modules/.vite/deps/@arco-design_web-react_icon.js?v=480ecf3b";
+import ProtectedRoute from "/admin/src/core/components/ProtectedRoute.tsx";
+var _jsxFileName = "E:/code/hope/hope-admin/src/projects/aurakey/router.tsx";
+import __vite__cjsImport4_react_jsxDevRuntime from "/admin/node_modules/.vite/deps/react_jsx-dev-runtime.js?v=480ecf3b";
+const AurakeyDashboardPage = lazy(_c = () => import("/admin/src/projects/aurakey/pages/Dashboard/index.tsx"));
+_c2 = AurakeyDashboardPage;
+const AurakeyUserOpsPage = lazy(_c3 = () => import("/admin/src/projects/aurakey/pages/UserOps/index.tsx"));
+_c4 = AurakeyUserOpsPage;
+const AurakeyRefundPage = lazy(_c5 = () => import("/admin/src/projects/aurakey/pages/Refund/index.tsx"));
+_c6 = AurakeyRefundPage;
+const AurakeyConfigPage = lazy(_c7 = () => import("/admin/src/projects/aurakey/pages/Config/index.tsx"));
+_c8 = AurakeyConfigPage;
+const AurakeyGalleryPage = lazy(_c9 = () => import("/admin/src/projects/aurakey/pages/Gallery/index.tsx"));
+_c10 = AurakeyGalleryPage;
+const AurakeyProductsPage = lazy(_c11 = () => import("/admin/src/projects/aurakey/pages/Products/index.tsx"));
+_c12 = AurakeyProductsPage;
+const Loading = () => /* @__PURE__ */ _jsxDEV("div", { children: "加载中..." }, void 0, false, {
+	fileName: _jsxFileName,
+	lineNumber: 14,
+	columnNumber: 23
+}, this);
+_c13 = Loading;
+export const aurakeyModule = {
+	moduleMeta: {
+		key: "aurakey",
+		appScope: "hope_aurakey",
+		title: "AuraKey",
+		icon: /* @__PURE__ */ _jsxDEV(IconSettings, {}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 21,
+			columnNumber: 11
+		}, this)
+	},
+	routes: [{
+		element: /* @__PURE__ */ _jsxDEV(ProtectedRoute, {
+			roleScope: "hope_aurakey",
+			allowedRoles: ["aurakey_admin"]
+		}, void 0, false, {
+			fileName: _jsxFileName,
+			lineNumber: 25,
+			columnNumber: 16
+		}, this),
+		children: [
+			{
+				path: "apps/aurakey",
+				element: /* @__PURE__ */ _jsxDEV(Navigate, {
+					to: "/apps/aurakey/dashboard",
+					replace: true
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 29,
+					columnNumber: 20
+				}, this)
+			},
+			{
+				path: "apps/aurakey/dashboard",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 34,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyDashboardPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 35,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 34,
+					columnNumber: 13
+				}, this)
+			},
+			{
+				path: "apps/aurakey/user-ops",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 42,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyUserOpsPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 43,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 42,
+					columnNumber: 13
+				}, this)
+			},
+			{
+				path: "apps/aurakey/refund",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 50,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyRefundPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 51,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 50,
+					columnNumber: 13
+				}, this)
+			},
+			{
+				path: "apps/aurakey/config",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 58,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyConfigPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 59,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 58,
+					columnNumber: 13
+				}, this)
+			},
+			{
+				path: "apps/aurakey/gallery",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 66,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyGalleryPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 67,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 66,
+					columnNumber: 13
+				}, this)
+			},
+			{
+				path: "apps/aurakey/products",
+				element: /* @__PURE__ */ _jsxDEV(Suspense, {
+					fallback: /* @__PURE__ */ _jsxDEV(Loading, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 74,
+						columnNumber: 33
+					}, this),
+					children: /* @__PURE__ */ _jsxDEV(AurakeyProductsPage, {}, void 0, false, {
+						fileName: _jsxFileName,
+						lineNumber: 75,
+						columnNumber: 15
+					}, this)
+				}, void 0, false, {
+					fileName: _jsxFileName,
+					lineNumber: 74,
+					columnNumber: 13
+				}, this)
+			}
+		]
+	}],
+	menuMeta: [
+		{
+			key: "/apps/aurakey/dashboard",
+			title: "仪表板",
+			icon: /* @__PURE__ */ _jsxDEV(IconSettings, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 86,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		},
+		{
+			key: "/apps/aurakey/user-ops",
+			title: "用户处理",
+			icon: /* @__PURE__ */ _jsxDEV(IconUserGroup, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 92,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		},
+		{
+			key: "/apps/aurakey/refund",
+			title: "订单退款",
+			icon: /* @__PURE__ */ _jsxDEV(IconFile, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 98,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		},
+		{
+			key: "/apps/aurakey/config",
+			title: "配置管理",
+			icon: /* @__PURE__ */ _jsxDEV(IconApps, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 104,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		},
+		{
+			key: "/apps/aurakey/gallery",
+			title: "画廊列表",
+			icon: /* @__PURE__ */ _jsxDEV(IconImage, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 110,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		},
+		{
+			key: "/apps/aurakey/products",
+			title: "商品列表",
+			icon: /* @__PURE__ */ _jsxDEV(IconList, {}, void 0, false, {
+				fileName: _jsxFileName,
+				lineNumber: 116,
+				columnNumber: 13
+			}, this),
+			roles: ["aurakey_admin"]
+		}
+	]
+};
+var _c, _c2, _c3, _c4, _c5, _c6, _c7, _c8, _c9, _c10, _c11, _c12, _c13;
+$RefreshReg$(_c, "AurakeyDashboardPage$lazy");
+$RefreshReg$(_c2, "AurakeyDashboardPage");
+$RefreshReg$(_c3, "AurakeyUserOpsPage$lazy");
+$RefreshReg$(_c4, "AurakeyUserOpsPage");
+$RefreshReg$(_c5, "AurakeyRefundPage$lazy");
+$RefreshReg$(_c6, "AurakeyRefundPage");
+$RefreshReg$(_c7, "AurakeyConfigPage$lazy");
+$RefreshReg$(_c8, "AurakeyConfigPage");
+$RefreshReg$(_c9, "AurakeyGalleryPage$lazy");
+$RefreshReg$(_c10, "AurakeyGalleryPage");
+$RefreshReg$(_c11, "AurakeyProductsPage$lazy");
+$RefreshReg$(_c12, "AurakeyProductsPage");
+$RefreshReg$(_c13, "Loading");
+import * as RefreshRuntime from "/admin/@react-refresh";
+const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;
+import * as __vite_react_currentExports from "/admin/src/projects/aurakey/router.tsx";
+if (import.meta.hot && !inWebWorker) {
+  if (!window.$RefreshReg$) {
+    throw new Error(
+      "@vitejs/plugin-react can't detect preamble. Something is wrong."
+    );
+  }
+
+  const currentExports = __vite_react_currentExports;
+  queueMicrotask(() => {
+    RefreshRuntime.registerExportsForReactRefresh("E:/code/hope/hope-admin/src/projects/aurakey/router.tsx", currentExports);
+    import.meta.hot.accept((nextExports) => {
+      if (!nextExports) return;
+      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate("E:/code/hope/hope-admin/src/projects/aurakey/router.tsx", currentExports, nextExports);
+      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);
+    });
+  });
+}
+function $RefreshReg$(type, id) { return RefreshRuntime.register(type, "E:/code/hope/hope-admin/src/projects/aurakey/router.tsx" + ' ' + id); }
+function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }
+
+//# sourceMappingURL=data:application/json;base64,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LENBQUMsZ0JBQWdCO0dBQ3pCO0VBQ0Y7Q0FDRiIsIm5hbWVzIjpbXSwic291cmNlcyI6WyJyb3V0ZXIudHN4Il0sInZlcnNpb24iOjMsInNvdXJjZXNDb250ZW50IjpbImltcG9ydCB7IGxhenksIFN1c3BlbnNlIH0gZnJvbSAncmVhY3QnO1xyXG5pbXBvcnQgeyBOYXZpZ2F0ZSB9IGZyb20gJ3JlYWN0LXJvdXRlci1kb20nO1xyXG5pbXBvcnQgeyBJY29uU2V0dGluZ3MsIEljb25Vc2VyR3JvdXAsIEljb25GaWxlLCBJY29uQXBwcywgSWNvbkltYWdlLCBJY29uTGlzdCB9IGZyb20gJ0BhcmNvLWRlc2lnbi93ZWItcmVhY3QvaWNvbic7XHJcbmltcG9ydCBQcm90ZWN0ZWRSb3V0ZSBmcm9tICdAL2NvcmUvY29tcG9uZW50cy9Qcm90ZWN0ZWRSb3V0ZSc7XHJcbmltcG9ydCB0eXBlIHsgQXBwTW9kdWxlIH0gZnJvbSAnQC9jb3JlL3R5cGVzL21vZHVsZSc7XHJcblxyXG5jb25zdCBBdXJha2V5RGFzaGJvYXJkUGFnZSA9IGxhenkoKCkgPT4gaW1wb3J0KCcuL3BhZ2VzL0Rhc2hib2FyZCcpKTtcclxuY29uc3QgQXVyYWtleVVzZXJPcHNQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoJy4vcGFnZXMvVXNlck9wcycpKTtcclxuY29uc3QgQXVyYWtleVJlZnVuZFBhZ2UgPSBsYXp5KCgpID0+IGltcG9ydCgnLi9wYWdlcy9SZWZ1bmQnKSk7XHJcbmNvbnN0IEF1cmFrZXlDb25maWdQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoJy4vcGFnZXMvQ29uZmlnJykpO1xyXG5jb25zdCBBdXJha2V5R2FsbGVyeVBhZ2UgPSBsYXp5KCgpID0+IGltcG9ydCgnLi9wYWdlcy9HYWxsZXJ5JykpO1xyXG5jb25zdCBBdXJha2V5UHJvZHVjdHNQYWdlID0gbGF6eSgoKSA9PiBpbXBvcnQoJy4vcGFnZXMvUHJvZHVjdHMnKSk7XHJcblxyXG5jb25zdCBMb2FkaW5nID0gKCkgPT4gPGRpdj7liqDovb3kuK0uLi48L2Rpdj47XHJcblxyXG5leHBvcnQgY29uc3QgYXVyYWtleU1vZHVsZTogQXBwTW9kdWxlID0ge1xyXG4gIG1vZHVsZU1ldGE6IHtcclxuICAgIGtleTogJ2F1cmFrZXknLFxyXG4gICAgYXBwU2NvcGU6ICdob3BlX2F1cmFrZXknLFxyXG4gICAgdGl0bGU6ICdBdXJhS2V5JyxcclxuICAgIGljb246IDxJY29uU2V0dGluZ3MgLz4sXHJcbiAgfSxcclxuICByb3V0ZXM6IFtcclxuICAgIHtcclxuICAgICAgZWxlbWVudDogPFByb3RlY3RlZFJvdXRlIHJvbGVTY29wZT1cImhvcGVfYXVyYWtleVwiIGFsbG93ZWRSb2xlcz17WydhdXJha2V5X2FkbWluJ119IC8+LFxyXG4gICAgICBjaGlsZHJlbjogW1xyXG4gICAgICAgIHtcclxuICAgICAgICAgIHBhdGg6ICdhcHBzL2F1cmFrZXknLFxyXG4gICAgICAgICAgZWxlbWVudDogPE5hdmlnYXRlIHRvPVwiL2FwcHMvYXVyYWtleS9kYXNoYm9hcmRcIiByZXBsYWNlIC8+LFxyXG4gICAgICAgIH0sXHJcbiAgICAgICAge1xyXG4gICAgICAgICAgcGF0aDogJ2FwcHMvYXVyYWtleS9kYXNoYm9hcmQnLFxyXG4gICAgICAgICAgZWxlbWVudDogKFxyXG4gICAgICAgICAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ezxMb2FkaW5nIC8+fT5cclxuICAgICAgICAgICAgICA8QXVyYWtleURhc2hib2FyZFBhZ2UgLz5cclxuICAgICAgICAgICAgPC9TdXNwZW5zZT5cclxuICAgICAgICAgICksXHJcbiAgICAgICAgfSxcclxuICAgICAgICB7XHJcbiAgICAgICAgICBwYXRoOiAnYXBwcy9hdXJha2V5L3VzZXItb3BzJyxcclxuICAgICAgICAgIGVsZW1lbnQ6IChcclxuICAgICAgICAgICAgPFN1c3BlbnNlIGZhbGxiYWNrPXs8TG9hZGluZyAvPn0+XHJcbiAgICAgICAgICAgICAgPEF1cmFrZXlVc2VyT3BzUGFnZSAvPlxyXG4gICAgICAgICAgICA8L1N1c3BlbnNlPlxyXG4gICAgICAgICAgKSxcclxuICAgICAgICB9LFxyXG4gICAgICAgIHtcclxuICAgICAgICAgIHBhdGg6ICdhcHBzL2F1cmFrZXkvcmVmdW5kJyxcclxuICAgICAgICAgIGVsZW1lbnQ6IChcclxuICAgICAgICAgICAgPFN1c3BlbnNlIGZhbGxiYWNrPXs8TG9hZGluZyAvPn0+XHJcbiAgICAgICAgICAgICAgPEF1cmFrZXlSZWZ1bmRQYWdlIC8+XHJcbiAgICAgICAgICAgIDwvU3VzcGVuc2U+XHJcbiAgICAgICAgICApLFxyXG4gICAgICAgIH0sXHJcbiAgICAgICAge1xyXG4gICAgICAgICAgcGF0aDogJ2FwcHMvYXVyYWtleS9jb25maWcnLFxyXG4gICAgICAgICAgZWxlbWVudDogKFxyXG4gICAgICAgICAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ezxMb2FkaW5nIC8+fT5cclxuICAgICAgICAgICAgICA8QXVyYWtleUNvbmZpZ1BhZ2UgLz5cclxuICAgICAgICAgICAgPC9TdXNwZW5zZT5cclxuICAgICAgICAgICksXHJcbiAgICAgICAgfSxcclxuICAgICAgICB7XHJcbiAgICAgICAgICBwYXRoOiAnYXBwcy9hdXJha2V5L2dhbGxlcnknLFxyXG4gICAgICAgICAgZWxlbWVudDogKFxyXG4gICAgICAgICAgICA8U3VzcGVuc2UgZmFsbGJhY2s9ezxMb2FkaW5nIC8+fT5cclxuICAgICAgICAgICAgICA8QXVyYWtleUdhbGxlcnlQYWdlIC8+XHJcbiAgICAgICAgICAgIDwvU3VzcGVuc2U+XHJcbiAgICAgICAgICApLFxyXG4gICAgICAgIH0sXHJcbiAgICAgICAge1xyXG4gICAgICAgICAgcGF0aDogJ2FwcHMvYXVyYWtleS9wcm9kdWN0cycsXHJcbiAgICAgICAgICBlbGVtZW50OiAoXHJcbiAgICAgICAgICAgIDxTdXNwZW5zZSBmYWxsYmFjaz17PExvYWRpbmcgLz59PlxyXG4gICAgICAgICAgICAgIDxBdXJha2V5UHJvZHVjdHNQYWdlIC8+XHJcbiAgICAgICAgICAgIDwvU3VzcGVuc2U+XHJcbiAgICAgICAgICApLFxyXG4gICAgICAgIH0sXHJcbiAgICAgIF0sXHJcbiAgICB9LFxyXG4gIF0sXHJcbiAgbWVudU1ldGE6IFtcclxuICAgIHtcclxuICAgICAga2V5OiAnL2FwcHMvYXVyYWtleS9kYXNoYm9hcmQnLFxyXG4gICAgICB0aXRsZTogJ+S7quihqOadvycsXHJcbiAgICAgIGljb246IDxJY29uU2V0dGluZ3MgLz4sXHJcbiAgICAgIHJvbGVzOiBbJ2F1cmFrZXlfYWRtaW4nXSxcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgIGtleTogJy9hcHBzL2F1cmFrZXkvdXNlci1vcHMnLFxyXG4gICAgICB0aXRsZTogJ+eUqOaIt+WkhOeQhicsXHJcbiAgICAgIGljb246IDxJY29uVXNlckdyb3VwIC8+LFxyXG4gICAgICByb2xlczogWydhdXJha2V5X2FkbWluJ10sXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICBrZXk6ICcvYXBwcy9hdXJha2V5L3JlZnVuZCcsXHJcbiAgICAgIHRpdGxlOiAn6K6i5Y2V6YCA5qy+JyxcclxuICAgICAgaWNvbjogPEljb25GaWxlIC8+LFxyXG4gICAgICByb2xlczogWydhdXJha2V5X2FkbWluJ10sXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICBrZXk6ICcvYXBwcy9hdXJha2V5L2NvbmZpZycsXHJcbiAgICAgIHRpdGxlOiAn6YWN572u566h55CGJyxcclxuICAgICAgaWNvbjogPEljb25BcHBzIC8+LFxyXG4gICAgICByb2xlczogWydhdXJha2V5X2FkbWluJ10sXHJcbiAgICB9LFxyXG4gICAge1xyXG4gICAgICBrZXk6ICcvYXBwcy9hdXJha2V5L2dhbGxlcnknLFxyXG4gICAgICB0aXRsZTogJ+eUu+W7iuWIl+ihqCcsXHJcbiAgICAgIGljb246IDxJY29uSW1hZ2UgLz4sXHJcbiAgICAgIHJvbGVzOiBbJ2F1cmFrZXlfYWRtaW4nXSxcclxuICAgIH0sXHJcbiAgICB7XHJcbiAgICAgIGtleTogJy9hcHBzL2F1cmFrZXkvcHJvZHVjdHMnLFxyXG4gICAgICB0aXRsZTogJ+WVhuWTgeWIl+ihqCcsXHJcbiAgICAgIGljb246IDxJY29uTGlzdCAvPixcclxuICAgICAgcm9sZXM6IFsnYXVyYWtleV9hZG1pbiddLFxyXG4gICAgfSxcclxuICBdLFxyXG59O1xyXG4iXX0=

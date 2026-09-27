@@ -11,12 +11,14 @@ const Loading = () => <div>加载中...</div>;
 export const systemModule: AppModule = {
   moduleMeta: {
     key: 'system',
+    appScope: 'admin_web',
+    superuserOnly: true,
     title: '系统管理',
     icon: <IconSettings />,
   },
   routes: [
     {
-      element: <ProtectedRoute allowedRoles={['SUPER_ADMIN']} />,
+      element: <ProtectedRoute roleScope="admin_web" requireSuperuser />,
       children: [
         {
           path: 'system/users',
@@ -42,13 +44,11 @@ export const systemModule: AppModule = {
       key: '/system/users',
       title: '用户管理',
       icon: <IconUserGroup />,
-      roles: ['SUPER_ADMIN'],
     },
     {
       key: '/system/roles',
       title: '角色管理',
       icon: <IconSettings />,
-      roles: ['SUPER_ADMIN'],
     },
   ],
 };

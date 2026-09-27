@@ -1,0 +1,3021 @@
+import { r as __toESM, t as __commonJSMin } from "/admin/node_modules/.vite/deps/chunk-CYJPkc-J.js?v=480ecf3b";
+import { t as require_spark_md5 } from "/admin/node_modules/.vite/deps/spark-md5.js?v=480ecf3b";
+//#region node_modules/qiniu-js/esm/errors/index.js
+var __extends$3 = (function() {
+	var extendStatics = function(d, b) {
+		extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d, b) {
+			d.__proto__ = b;
+		} || function(d, b) {
+			for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+		};
+		return extendStatics(d, b);
+	};
+	return function(d, b) {
+		extendStatics(d, b);
+		function __() {
+			this.constructor = d;
+		}
+		d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+})();
+var QiniuErrorName;
+(function(QiniuErrorName) {
+	QiniuErrorName["InvalidFile"] = "InvalidFile";
+	QiniuErrorName["InvalidToken"] = "InvalidToken";
+	QiniuErrorName["InvalidMetadata"] = "InvalidMetadata";
+	QiniuErrorName["InvalidChunkSize"] = "InvalidChunkSize";
+	QiniuErrorName["InvalidCustomVars"] = "InvalidCustomVars";
+	QiniuErrorName["NotAvailableUploadHost"] = "NotAvailableUploadHost";
+	QiniuErrorName["ReadCacheFailed"] = "ReadCacheFailed";
+	QiniuErrorName["InvalidCacheData"] = "InvalidCacheData";
+	QiniuErrorName["WriteCacheFailed"] = "WriteCacheFailed";
+	QiniuErrorName["RemoveCacheFailed"] = "RemoveCacheFailed";
+	QiniuErrorName["GetCanvasContextFailed"] = "GetCanvasContextFailed";
+	QiniuErrorName["UnsupportedFileType"] = "UnsupportedFileType";
+	QiniuErrorName["FileReaderReadFailed"] = "FileReaderReadFailed";
+	QiniuErrorName["NotAvailableXMLHttpRequest"] = "NotAvailableXMLHttpRequest";
+	QiniuErrorName["InvalidProgressEventTarget"] = "InvalidProgressEventTarget";
+	QiniuErrorName["RequestError"] = "RequestError";
+})(QiniuErrorName || (QiniuErrorName = {}));
+var QiniuError = function() {
+	function QiniuError(name, message) {
+		this.name = name;
+		this.message = message;
+		this.stack = (/* @__PURE__ */ new Error()).stack;
+	}
+	return QiniuError;
+}();
+var QiniuRequestError = function(_super) {
+	__extends$3(QiniuRequestError, _super);
+	function QiniuRequestError(code, reqId, message, data) {
+		var _this = _super.call(this, QiniuErrorName.RequestError, message) || this;
+		_this.code = code;
+		_this.reqId = reqId;
+		/**
+		* @description 标记当前的 error 类型是一个 QiniuRequestError
+		* @deprecated 下一个大版本将会移除，不推荐使用，推荐直接使用 instanceof 进行判断
+		*/
+		_this.isRequestError = true;
+		_this.data = data;
+		return _this;
+	}
+	return QiniuRequestError;
+}(QiniuError);
+/**
+* @description 由于跨域、证书错误、断网、host 解析失败、系统拦截等原因导致的错误
+*/
+var QiniuNetworkError = function(_super) {
+	__extends$3(QiniuNetworkError, _super);
+	function QiniuNetworkError(message, reqId) {
+		if (reqId === void 0) reqId = "";
+		return _super.call(this, 0, reqId, message) || this;
+	}
+	return QiniuNetworkError;
+}(QiniuRequestError);
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/pool.js
+var Pool = function() {
+	function Pool(runTask, limit) {
+		this.runTask = runTask;
+		this.limit = limit;
+		this.aborted = false;
+		this.queue = [];
+		this.processing = [];
+	}
+	Pool.prototype.enqueue = function(task) {
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			_this.queue.push({
+				task,
+				resolve,
+				reject
+			});
+			_this.check();
+		});
+	};
+	Pool.prototype.run = function(item) {
+		var _this = this;
+		this.queue = this.queue.filter(function(v) {
+			return v !== item;
+		});
+		this.processing.push(item);
+		this.runTask(item.task).then(function() {
+			_this.processing = _this.processing.filter(function(v) {
+				return v !== item;
+			});
+			item.resolve();
+			_this.check();
+		}, function(err) {
+			return item.reject(err);
+		});
+	};
+	Pool.prototype.check = function() {
+		var _this = this;
+		if (this.aborted) return;
+		var processingNum = this.processing.length;
+		var availableNum = this.limit - processingNum;
+		this.queue.slice(0, availableNum).forEach(function(item) {
+			_this.run(item);
+		});
+	};
+	Pool.prototype.abort = function() {
+		this.queue = [];
+		this.aborted = true;
+	};
+	return Pool;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/observable.js
+var __extends$2 = (function() {
+	var extendStatics = function(d, b) {
+		extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d, b) {
+			d.__proto__ = b;
+		} || function(d, b) {
+			for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+		};
+		return extendStatics(d, b);
+	};
+	return function(d, b) {
+		extendStatics(d, b);
+		function __() {
+			this.constructor = d;
+		}
+		d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+})();
+var __assign$6 = function() {
+	__assign$6 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$6.apply(this, arguments);
+};
+/**
+* 实现 Observer 接口并且继承 Subscription 类，Observer 是消费 Observable 值的公有 API
+* 所有 Observers 都转化成了 Subscriber，以便提供类似 Subscription 的能力，比如 unsubscribe
+*/
+var Subscriber = function(_super) {
+	__extends$2(Subscriber, _super);
+	function Subscriber(observerOrNext, error, complete) {
+		var _this = _super.call(this) || this;
+		_this.isStopped = false;
+		if (observerOrNext && typeof observerOrNext === "object") _this.destination = observerOrNext;
+		else _this.destination = __assign$6(__assign$6(__assign$6({}, observerOrNext && { next: observerOrNext }), error && { error }), complete && { complete });
+		return _this;
+	}
+	Subscriber.prototype.unsubscribe = function() {
+		if (this.closed) return;
+		this.isStopped = true;
+		_super.prototype.unsubscribe.call(this);
+	};
+	Subscriber.prototype.next = function(value) {
+		if (!this.isStopped && this.destination.next) this.destination.next(value);
+	};
+	Subscriber.prototype.error = function(err) {
+		if (!this.isStopped && this.destination.error) {
+			this.isStopped = true;
+			this.destination.error(err);
+		}
+	};
+	Subscriber.prototype.complete = function(result) {
+		if (!this.isStopped && this.destination.complete) {
+			this.isStopped = true;
+			this.destination.complete(result);
+		}
+	};
+	return Subscriber;
+}(function() {
+	function Subscription() {
+		/** 用来标示该 Subscription 是否被取消订阅的标示位 */
+		this.closed = false;
+	}
+	/** 取消 observer 的订阅 */
+	Subscription.prototype.unsubscribe = function() {
+		if (this.closed) return;
+		this.closed = true;
+		if (this._unsubscribe) this._unsubscribe();
+	};
+	/** 添加一个 tear down 在该 Subscription 的 unsubscribe() 期间调用 */
+	Subscription.prototype.add = function(teardown) {
+		this._unsubscribe = teardown;
+	};
+	return Subscription;
+}());
+/** 可观察对象，当前的上传事件的集合 */
+var Observable = function() {
+	function Observable(_subscribe) {
+		this._subscribe = _subscribe;
+	}
+	Observable.prototype.subscribe = function(observerOrNext, error, complete) {
+		var sink = new Subscriber(observerOrNext, error, complete);
+		sink.add(this._subscribe(sink));
+		return sink;
+	};
+	return Observable;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/base64.js
+function utf8Encode(argString) {
+	if (argString === null || typeof argString === "undefined") return "";
+	var string = argString + "";
+	var utftext = "", start, end, stringl = 0;
+	start = end = 0;
+	stringl = string.length;
+	for (var n = 0; n < stringl; n++) {
+		var c1 = string.charCodeAt(n);
+		var enc = null;
+		if (c1 < 128) end++;
+		else if (c1 > 127 && c1 < 2048) enc = String.fromCharCode(c1 >> 6 | 192, c1 & 63 | 128);
+		else if ((c1 & 63488 ^ 55296) > 0) enc = String.fromCharCode(c1 >> 12 | 224, c1 >> 6 & 63 | 128, c1 & 63 | 128);
+		else {
+			if ((c1 & 64512 ^ 55296) > 0) throw new RangeError("Unmatched trail surrogate at " + n);
+			var c2 = string.charCodeAt(++n);
+			if ((c2 & 64512 ^ 56320) > 0) throw new RangeError("Unmatched lead surrogate at " + (n - 1));
+			c1 = ((c1 & 1023) << 10) + (c2 & 1023) + 65536;
+			enc = String.fromCharCode(c1 >> 18 | 240, c1 >> 12 & 63 | 128, c1 >> 6 & 63 | 128, c1 & 63 | 128);
+		}
+		if (enc !== null) {
+			if (end > start) utftext += string.slice(start, end);
+			utftext += enc;
+			start = end = n + 1;
+		}
+	}
+	if (end > start) utftext += string.slice(start, stringl);
+	return utftext;
+}
+function utf8Decode(strData) {
+	var tmpArr = [];
+	var i = 0;
+	var c1 = 0;
+	var seqlen = 0;
+	strData += "";
+	while (i < strData.length) {
+		c1 = strData.charCodeAt(i) & 255;
+		seqlen = 0;
+		if (c1 <= 191) {
+			c1 = c1 & 127;
+			seqlen = 1;
+		} else if (c1 <= 223) {
+			c1 = c1 & 31;
+			seqlen = 2;
+		} else if (c1 <= 239) {
+			c1 = c1 & 15;
+			seqlen = 3;
+		} else {
+			c1 = c1 & 7;
+			seqlen = 4;
+		}
+		for (var ai = 1; ai < seqlen; ++ai) c1 = c1 << 6 | strData.charCodeAt(ai + i) & 63;
+		if (seqlen === 4) {
+			c1 -= 65536;
+			tmpArr.push(String.fromCharCode(55296 | c1 >> 10 & 1023));
+			tmpArr.push(String.fromCharCode(56320 | c1 & 1023));
+		} else tmpArr.push(String.fromCharCode(c1));
+		i += seqlen;
+	}
+	return tmpArr.join("");
+}
+function base64Encode(data) {
+	var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var o1, o2, o3, h1, h2, h3, h4, bits, i = 0, ac = 0, enc = "", tmp_arr = [];
+	if (!data) return data;
+	data = utf8Encode(data + "");
+	do {
+		o1 = data.charCodeAt(i++);
+		o2 = data.charCodeAt(i++);
+		o3 = data.charCodeAt(i++);
+		bits = o1 << 16 | o2 << 8 | o3;
+		h1 = bits >> 18 & 63;
+		h2 = bits >> 12 & 63;
+		h3 = bits >> 6 & 63;
+		h4 = bits & 63;
+		tmp_arr[ac++] = b64.charAt(h1) + b64.charAt(h2) + b64.charAt(h3) + b64.charAt(h4);
+	} while (i < data.length);
+	enc = tmp_arr.join("");
+	switch (data.length % 3) {
+		case 1:
+			enc = enc.slice(0, -2) + "==";
+			break;
+		case 2:
+			enc = enc.slice(0, -1) + "=";
+			break;
+	}
+	return enc;
+}
+function base64Decode(data) {
+	var b64 = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=";
+	var o1, o2, o3, h1, h2, h3, h4, bits, i = 0, ac = 0, dec = "", tmp_arr = [];
+	if (!data) return data;
+	data += "";
+	do {
+		h1 = b64.indexOf(data.charAt(i++));
+		h2 = b64.indexOf(data.charAt(i++));
+		h3 = b64.indexOf(data.charAt(i++));
+		h4 = b64.indexOf(data.charAt(i++));
+		bits = h1 << 18 | h2 << 12 | h3 << 6 | h4;
+		o1 = bits >> 16 & 255;
+		o2 = bits >> 8 & 255;
+		o3 = bits & 255;
+		if (h3 === 64) tmp_arr[ac++] = String.fromCharCode(o1);
+		else if (h4 === 64) tmp_arr[ac++] = String.fromCharCode(o1, o2);
+		else tmp_arr[ac++] = String.fromCharCode(o1, o2, o3);
+	} while (i < data.length);
+	dec = tmp_arr.join("");
+	return utf8Decode(dec);
+}
+function urlSafeBase64Encode(v) {
+	v = base64Encode(v);
+	return v.replace(/\//g, "_").replace(/\+/g, "-");
+}
+function urlSafeBase64Decode(v) {
+	v = v.replace(/_/g, "/").replace(/-/g, "+");
+	return base64Decode(v);
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/helper.js
+var import_spark_md5 = /* @__PURE__ */ __toESM(require_spark_md5());
+var __assign$5 = function() {
+	__assign$5 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$5.apply(this, arguments);
+};
+var __awaiter$7 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$7 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+var MB = Math.pow(1024, 2);
+function getChunks(file, blockSize) {
+	var chunkByteSize = blockSize * MB;
+	if (chunkByteSize > file.size) chunkByteSize = file.size;
+	else while (file.size > chunkByteSize * 1e4) chunkByteSize *= 2;
+	var chunks = [];
+	var count = Math.ceil(file.size / chunkByteSize);
+	for (var i = 0; i < count; i++) {
+		var chunk = file.slice(chunkByteSize * i, i === count - 1 ? file.size : chunkByteSize * (i + 1));
+		chunks.push(chunk);
+	}
+	return chunks;
+}
+function isMetaDataValid(params) {
+	return Object.keys(params).every(function(key) {
+		return key.indexOf("x-qn-meta-") === 0;
+	});
+}
+function isCustomVarsValid(params) {
+	return Object.keys(params).every(function(key) {
+		return key.indexOf("x:") === 0;
+	});
+}
+function sum(list) {
+	return list.reduce(function(data, loaded) {
+		return data + loaded;
+	}, 0);
+}
+function setLocalFileInfo(localKey, info, logger) {
+	try {
+		localStorage.setItem(localKey, JSON.stringify(info));
+	} catch (err) {
+		logger.warn(new QiniuError(QiniuErrorName.WriteCacheFailed, "setLocalFileInfo failed: " + localKey));
+	}
+}
+function createLocalKey(name, key, size) {
+	var localKey = key == null ? "_" : "_key_" + key + "_";
+	return "qiniu_js_sdk_upload_file_name_" + name + localKey + "size_" + size;
+}
+function removeLocalFileInfo(localKey, logger) {
+	try {
+		localStorage.removeItem(localKey);
+	} catch (err) {
+		logger.warn(new QiniuError(QiniuErrorName.RemoveCacheFailed, "removeLocalFileInfo failed. key: " + localKey));
+	}
+}
+function getLocalFileInfo(localKey, logger) {
+	var localInfoString = null;
+	try {
+		localInfoString = localStorage.getItem(localKey);
+	} catch (_a) {
+		logger.warn(new QiniuError(QiniuErrorName.ReadCacheFailed, "getLocalFileInfo failed. key: " + localKey));
+	}
+	if (localInfoString == null) return null;
+	var localInfo = null;
+	try {
+		localInfo = JSON.parse(localInfoString);
+	} catch (_b) {
+		removeLocalFileInfo(localKey, logger);
+		logger.warn(new QiniuError(QiniuErrorName.InvalidCacheData, "getLocalFileInfo failed to parse. key: " + localKey));
+	}
+	return localInfo;
+}
+function getAuthHeaders(token) {
+	return { Authorization: "UpToken " + token };
+}
+function getHeadersForChunkUpload(token) {
+	var header = getAuthHeaders(token);
+	return __assign$5({ "content-type": "application/octet-stream" }, header);
+}
+function getHeadersForMkFile(token) {
+	var header = getAuthHeaders(token);
+	return __assign$5({ "content-type": "application/json" }, header);
+}
+function createXHR() {
+	if (window.XMLHttpRequest) return new XMLHttpRequest();
+	if (window.ActiveXObject) return new window.ActiveXObject("Microsoft.XMLHTTP");
+	throw new QiniuError(QiniuErrorName.NotAvailableXMLHttpRequest, "the current environment does not support.");
+}
+function computeMd5(data) {
+	return __awaiter$7(this, void 0, void 0, function() {
+		var buffer, spark;
+		return __generator$7(this, function(_a) {
+			switch (_a.label) {
+				case 0: return [4, readAsArrayBuffer(data)];
+				case 1:
+					buffer = _a.sent();
+					spark = new import_spark_md5.default.ArrayBuffer();
+					spark.append(buffer);
+					return [2, spark.end()];
+			}
+		});
+	});
+}
+function readAsArrayBuffer(data) {
+	return new Promise(function(resolve, reject) {
+		var reader = new FileReader();
+		reader.onload = function(evt) {
+			if (evt.target) {
+				var body = evt.target.result;
+				resolve(body);
+			} else reject(new QiniuError(QiniuErrorName.InvalidProgressEventTarget, "progress event target is undefined"));
+		};
+		reader.onerror = function() {
+			reject(new QiniuError(QiniuErrorName.FileReaderReadFailed, "fileReader read failed"));
+		};
+		reader.readAsArrayBuffer(data);
+	});
+}
+function request(url, options) {
+	return new Promise(function(resolve, reject) {
+		var xhr = createXHR();
+		xhr.open(options.method, url);
+		if (options.onCreate) options.onCreate(xhr);
+		if (options.headers) {
+			var headers_1 = options.headers;
+			Object.keys(headers_1).forEach(function(k) {
+				xhr.setRequestHeader(k, headers_1[k]);
+			});
+		}
+		xhr.upload.addEventListener("progress", function(evt) {
+			if (evt.lengthComputable && options.onProgress) options.onProgress({
+				loaded: evt.loaded,
+				total: evt.total
+			});
+		});
+		xhr.onreadystatechange = function() {
+			var responseText = xhr.responseText;
+			if (xhr.readyState !== 4) return;
+			var reqId = xhr.getResponseHeader("x-reqId") || "";
+			if (xhr.status === 0) {
+				reject(new QiniuNetworkError("network error.", reqId));
+				return;
+			}
+			if (xhr.status !== 200) {
+				var message = "xhr request failed, code: " + xhr.status;
+				if (responseText) message += " response: " + responseText;
+				var data = void 0;
+				try {
+					data = JSON.parse(responseText);
+				} catch (_a) {}
+				reject(new QiniuRequestError(xhr.status, reqId, message, data));
+				return;
+			}
+			try {
+				resolve({
+					data: JSON.parse(responseText),
+					reqId
+				});
+			} catch (err) {
+				reject(err);
+			}
+		};
+		xhr.send(options.body);
+	});
+}
+function getPortFromUrl(url) {
+	if (url && url.match) {
+		var groups = url.match(/(^https?)/);
+		if (!groups) return "";
+		var type = groups[1];
+		groups = url.match(/^https?:\/\/([^:^/]*):(\d*)/);
+		if (groups) return groups[2];
+		if (type === "http") return "80";
+		return "443";
+	}
+	return "";
+}
+function getDomainFromUrl(url) {
+	if (url && url.match) {
+		var groups = url.match(/^https?:\/\/([^:^/]*)/);
+		return groups ? groups[1] : "";
+	}
+	return "";
+}
+function getPutPolicy(token) {
+	if (!token) throw new QiniuError(QiniuErrorName.InvalidToken, "invalid token.");
+	var segments = token.split(":");
+	if (segments.length === 1) throw new QiniuError(QiniuErrorName.InvalidToken, "invalid token segments.");
+	var assessKey = segments.length > 3 ? segments[1] : segments[0];
+	if (!assessKey) throw new QiniuError(QiniuErrorName.InvalidToken, "missing assess key field.");
+	var putPolicy = null;
+	try {
+		putPolicy = JSON.parse(urlSafeBase64Decode(segments[segments.length - 1]));
+	} catch (error) {
+		throw new QiniuError(QiniuErrorName.InvalidToken, "token parse failed.");
+	}
+	if (putPolicy == null) throw new QiniuError(QiniuErrorName.InvalidToken, "putPolicy is null.");
+	if (putPolicy.scope == null) throw new QiniuError(QiniuErrorName.InvalidToken, "scope field is null.");
+	var bucketName = putPolicy.scope.split(":")[0];
+	if (!bucketName) throw new QiniuError(QiniuErrorName.InvalidToken, "resolve bucketName failed.");
+	return {
+		assessKey,
+		bucketName,
+		scope: putPolicy.scope
+	};
+}
+function createObjectURL(file) {
+	return (window.URL || window.webkitURL || window.mozURL).createObjectURL(file);
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/config/region.js
+var _a;
+/** 上传区域 */
+var region = {
+	z0: "z0",
+	z1: "z1",
+	z2: "z2",
+	na0: "na0",
+	as0: "as0",
+	cnEast2: "cn-east-2"
+};
+/** 上传区域对应的 host */
+var regionUphostMap = (_a = {}, _a[region.z0] = {
+	srcUphost: ["up.qiniup.com"],
+	cdnUphost: ["upload.qiniup.com"]
+}, _a[region.z1] = {
+	srcUphost: ["up-z1.qiniup.com"],
+	cdnUphost: ["upload-z1.qiniup.com"]
+}, _a[region.z2] = {
+	srcUphost: ["up-z2.qiniup.com"],
+	cdnUphost: ["upload-z2.qiniup.com"]
+}, _a[region.na0] = {
+	srcUphost: ["up-na0.qiniup.com"],
+	cdnUphost: ["upload-na0.qiniup.com"]
+}, _a[region.as0] = {
+	srcUphost: ["up-as0.qiniup.com"],
+	cdnUphost: ["upload-as0.qiniup.com"]
+}, _a[region.cnEast2] = {
+	srcUphost: ["up-cn-east-2.qiniup.com"],
+	cdnUphost: ["upload-cn-east-2.qiniup.com"]
+}, _a);
+//#endregion
+//#region node_modules/querystring/decode.js
+var require_decode = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	function hasOwnProperty(obj, prop) {
+		return Object.prototype.hasOwnProperty.call(obj, prop);
+	}
+	module.exports = function(qs, sep, eq, options) {
+		sep = sep || "&";
+		eq = eq || "=";
+		var obj = {};
+		if (typeof qs !== "string" || qs.length === 0) return obj;
+		var regexp = /\+/g;
+		qs = qs.split(sep);
+		var maxKeys = 1e3;
+		if (options && typeof options.maxKeys === "number") maxKeys = options.maxKeys;
+		var len = qs.length;
+		if (maxKeys > 0 && len > maxKeys) len = maxKeys;
+		for (var i = 0; i < len; ++i) {
+			var x = qs[i].replace(regexp, "%20"), idx = x.indexOf(eq), kstr, vstr, k, v;
+			if (idx >= 0) {
+				kstr = x.substr(0, idx);
+				vstr = x.substr(idx + 1);
+			} else {
+				kstr = x;
+				vstr = "";
+			}
+			k = decodeURIComponent(kstr);
+			v = decodeURIComponent(vstr);
+			if (!hasOwnProperty(obj, k)) obj[k] = v;
+			else if (Array.isArray(obj[k])) obj[k].push(v);
+			else obj[k] = [obj[k], v];
+		}
+		return obj;
+	};
+}));
+//#endregion
+//#region node_modules/querystring/encode.js
+var require_encode = /* @__PURE__ */ __commonJSMin(((exports, module) => {
+	var stringifyPrimitive = function(v) {
+		switch (typeof v) {
+			case "string": return v;
+			case "boolean": return v ? "true" : "false";
+			case "number": return isFinite(v) ? v : "";
+			default: return "";
+		}
+	};
+	module.exports = function(obj, sep, eq, name) {
+		sep = sep || "&";
+		eq = eq || "=";
+		if (obj === null) obj = void 0;
+		if (typeof obj === "object") return Object.keys(obj).map(function(k) {
+			var ks = encodeURIComponent(stringifyPrimitive(k)) + eq;
+			if (Array.isArray(obj[k])) return obj[k].map(function(v) {
+				return ks + encodeURIComponent(stringifyPrimitive(v));
+			}).join(sep);
+			else return ks + encodeURIComponent(stringifyPrimitive(obj[k]));
+		}).filter(Boolean).join(sep);
+		if (!name) return "";
+		return encodeURIComponent(stringifyPrimitive(name)) + eq + encodeURIComponent(stringifyPrimitive(obj));
+	};
+}));
+//#endregion
+//#region node_modules/qiniu-js/esm/api/index.js
+var import_querystring = (/* @__PURE__ */ __commonJSMin(((exports) => {
+	exports.decode = exports.parse = require_decode();
+	exports.encode = exports.stringify = require_encode();
+})))();
+var __assign$4 = function() {
+	__assign$4 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$4.apply(this, arguments);
+};
+var __awaiter$6 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$6 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+function getUpHosts(accessKey, bucketName, protocol) {
+	return __awaiter$6(this, void 0, void 0, function() {
+		var params, url;
+		return __generator$6(this, function(_a) {
+			params = (0, import_querystring.stringify)({
+				ak: accessKey,
+				bucket: bucketName
+			});
+			url = protocol + "://api.qiniu.com/v2/query?" + params;
+			return [2, request(url, { method: "GET" })];
+		});
+	});
+}
+/**
+* @param bucket 空间名
+* @param key 目标文件名
+* @param uploadInfo 上传信息
+*/
+function getBaseUrl(bucket, key, uploadInfo) {
+	var url = uploadInfo.url, id = uploadInfo.id;
+	return url + "/buckets/" + bucket + "/objects/" + (key != null ? urlSafeBase64Encode(key) : "~") + "/uploads/" + id;
+}
+/**
+* @param token 上传鉴权凭证
+* @param bucket 上传空间
+* @param key 目标文件名
+* @param uploadUrl 上传地址
+*/
+function initUploadParts(token, bucket, key, uploadUrl) {
+	return request(uploadUrl + "/buckets/" + bucket + "/objects/" + (key != null ? urlSafeBase64Encode(key) : "~") + "/uploads", {
+		method: "POST",
+		headers: getAuthHeaders(token)
+	});
+}
+/**
+* @param token 上传鉴权凭证
+* @param index 当前 chunk 的索引
+* @param uploadInfo 上传信息
+* @param options 请求参数
+*/
+function uploadChunk(token, key, index, uploadInfo, options) {
+	var bucket = getPutPolicy(token).bucketName;
+	var url = getBaseUrl(bucket, key, uploadInfo) + ("/" + index);
+	var headers = getHeadersForChunkUpload(token);
+	if (options.md5) headers["Content-MD5"] = options.md5;
+	return request(url, __assign$4(__assign$4({}, options), {
+		method: "PUT",
+		headers
+	}));
+}
+/**
+* @param token 上传鉴权凭证
+* @param key 目标文件名
+* @param uploadInfo 上传信息
+* @param options 请求参数
+*/
+function uploadComplete(token, key, uploadInfo, options) {
+	var bucket = getPutPolicy(token).bucketName;
+	return request(getBaseUrl(bucket, key, uploadInfo), __assign$4(__assign$4({}, options), {
+		method: "POST",
+		headers: getHeadersForMkFile(token)
+	}));
+}
+/**
+* @param token 上传鉴权凭证
+* @param key 目标文件名
+* @param uploadInfo 上传信息
+*/
+function deleteUploadedChunks(token, key, uploadinfo) {
+	var bucket = getPutPolicy(token).bucketName;
+	return request(getBaseUrl(bucket, key, uploadinfo), {
+		method: "DELETE",
+		headers: getAuthHeaders(token)
+	});
+}
+/**
+* @param  {string} url
+* @param  {FormData} data
+* @param  {Partial<utils.RequestOptions>} options
+* @returns Promise
+* @description 直传接口
+*/
+function direct(url, data, options) {
+	return request(url, __assign$4({
+		method: "POST",
+		body: data
+	}, options));
+}
+/**
+* @param  {UploadUrlConfig} config
+* @param  {string} token
+* @returns Promise
+* @description 获取上传 url
+*/
+function getUploadUrl(_config, token) {
+	return __awaiter$6(this, void 0, void 0, function() {
+		var config, protocol, putPolicy, res, hosts;
+		return __generator$6(this, function(_a) {
+			switch (_a.label) {
+				case 0:
+					config = normalizeUploadConfig(_config);
+					protocol = config.upprotocol;
+					if (config.uphost.length > 0) return [2, protocol + "://" + config.uphost[0]];
+					putPolicy = getPutPolicy(token);
+					return [4, getUpHosts(putPolicy.assessKey, putPolicy.bucketName, protocol)];
+				case 1:
+					res = _a.sent();
+					hosts = res.data.up.acc.main;
+					return [2, protocol + "://" + hosts[0]];
+			}
+		});
+	});
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/upload/base.js
+var __assign$3 = function() {
+	__assign$3 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$3.apply(this, arguments);
+};
+var __awaiter$5 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$5 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+var __read$3 = function(o, n) {
+	var m = typeof Symbol === "function" && o[Symbol.iterator];
+	if (!m) return o;
+	var i = m.call(o), r, ar = [], e;
+	try {
+		while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+	} catch (error) {
+		e = { error };
+	} finally {
+		try {
+			if (r && !r.done && (m = i["return"])) m.call(i);
+		} finally {
+			if (e) throw e.error;
+		}
+	}
+	return ar;
+};
+var __spread$3 = function() {
+	for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read$3(arguments[i]));
+	return ar;
+};
+var FREEZE_CODE_LIST = [
+	0,
+	502,
+	503,
+	504,
+	599
+];
+var RETRY_CODE_LIST = __spread$3(FREEZE_CODE_LIST, [406]);
+var GB = Math.pow(1024, 3);
+var Base = function() {
+	function Base(options, handlers, hostPool, logger) {
+		this.hostPool = hostPool;
+		this.logger = logger;
+		this.aborted = false;
+		this.retryCount = 0;
+		this.xhrList = [];
+		this.config = options.config;
+		logger.info("config inited.", this.config);
+		this.putExtra = __assign$3({ fname: "" }, options.putExtra);
+		logger.info("putExtra inited.", this.putExtra);
+		this.key = options.key;
+		this.file = options.file;
+		this.token = options.token;
+		this.onData = handlers.onData;
+		this.onError = handlers.onError;
+		this.onComplete = handlers.onComplete;
+		try {
+			var putPolicy = getPutPolicy(this.token);
+			this.bucketName = putPolicy.bucketName;
+			this.assessKey = putPolicy.assessKey;
+		} catch (error) {
+			logger.error("get putPolicy from token failed.", error);
+			this.onError(error);
+		}
+	}
+	Base.prototype.checkAndUpdateUploadHost = function() {
+		return __awaiter$5(this, void 0, void 0, function() {
+			var newHost;
+			return __generator$5(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.logger.info("get available upload host.");
+						return [4, this.hostPool.getUp(this.assessKey, this.bucketName, this.config.upprotocol)];
+					case 1:
+						newHost = _a.sent();
+						if (newHost == null) throw new QiniuError(QiniuErrorName.NotAvailableUploadHost, "no available upload host.");
+						if (this.uploadHost != null && this.uploadHost.host !== newHost.host) this.logger.warn("host switches from " + this.uploadHost.host + " to " + newHost.host + ".");
+						else this.logger.info("use host " + newHost.host + ".");
+						this.uploadHost = newHost;
+						return [2];
+				}
+			});
+		});
+	};
+	Base.prototype.checkAndUnfreezeHost = function() {
+		this.logger.info("check unfreeze host.");
+		if (this.uploadHost != null && this.uploadHost.isFrozen()) {
+			this.logger.warn(this.uploadHost.host + " will be unfrozen.");
+			this.uploadHost.unfreeze();
+		}
+	};
+	Base.prototype.checkAndFreezeHost = function(error) {
+		this.logger.info("check freeze host.");
+		if (error instanceof QiniuRequestError && this.uploadHost != null) {
+			if (FREEZE_CODE_LIST.includes(error.code)) {
+				this.logger.warn(this.uploadHost.host + " will be temporarily frozen.");
+				this.uploadHost.freeze();
+			}
+		}
+	};
+	Base.prototype.handleError = function(error) {
+		this.logger.error(error.message);
+		this.onError(error);
+	};
+	/**
+	* @returns Promise 返回结果与上传最终状态无关，状态信息请通过 [Subscriber] 获取。
+	* @description 上传文件，状态信息请通过 [Subscriber] 获取。
+	*/
+	Base.prototype.putFile = function() {
+		return __awaiter$5(this, void 0, void 0, function() {
+			var result, err_1, notReachRetryCount, needRetry;
+			return __generator$5(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.aborted = false;
+						if (!this.putExtra.fname) {
+							this.logger.info("use file.name as fname.");
+							this.putExtra.fname = this.file.name;
+						}
+						if (this.file.size > 1e4 * GB) {
+							this.handleError(new QiniuError(QiniuErrorName.InvalidFile, "file size exceed maximum value 10000G"));
+							return [2];
+						}
+						if (this.putExtra.customVars) {
+							if (!isCustomVarsValid(this.putExtra.customVars)) {
+								this.handleError(new QiniuError(QiniuErrorName.InvalidCustomVars, "customVars key should start width x:"));
+								return [2];
+							}
+						}
+						if (this.putExtra.metadata) {
+							if (!isMetaDataValid(this.putExtra.metadata)) {
+								this.handleError(new QiniuError(QiniuErrorName.InvalidMetadata, "metadata key should start with x-qn-meta-"));
+								return [2];
+							}
+						}
+						_a.label = 1;
+					case 1:
+						_a.trys.push([
+							1,
+							4,
+							,
+							5
+						]);
+						this.uploadAt = (/* @__PURE__ */ new Date()).getTime();
+						return [4, this.checkAndUpdateUploadHost()];
+					case 2:
+						_a.sent();
+						return [4, this.run()];
+					case 3:
+						result = _a.sent();
+						this.onComplete(result.data);
+						this.checkAndUnfreezeHost();
+						this.sendLog(result.reqId, 200);
+						return [2];
+					case 4:
+						err_1 = _a.sent();
+						if (this.aborted) {
+							this.logger.warn("upload is aborted.");
+							this.sendLog("", -2);
+							return [2];
+						}
+						this.clear();
+						this.logger.error(err_1);
+						if (err_1 instanceof QiniuRequestError) {
+							this.sendLog(err_1.reqId, err_1.code);
+							this.checkAndFreezeHost(err_1);
+							notReachRetryCount = ++this.retryCount <= this.config.retryCount;
+							needRetry = RETRY_CODE_LIST.includes(err_1.code);
+							if (needRetry && notReachRetryCount) {
+								this.logger.warn("error auto retry: " + this.retryCount + "/" + this.config.retryCount + ".");
+								this.putFile();
+								return [2];
+							}
+						}
+						this.onError(err_1);
+						return [3, 5];
+					case 5: return [2];
+				}
+			});
+		});
+	};
+	Base.prototype.clear = function() {
+		this.xhrList.forEach(function(xhr) {
+			xhr.onreadystatechange = null;
+			xhr.abort();
+		});
+		this.xhrList = [];
+		this.logger.info("cleanup uploading xhr.");
+	};
+	Base.prototype.stop = function() {
+		this.logger.info("aborted.");
+		this.clear();
+		this.aborted = true;
+	};
+	Base.prototype.addXhr = function(xhr) {
+		this.xhrList.push(xhr);
+	};
+	Base.prototype.sendLog = function(reqId, code) {
+		var _a, _b;
+		this.logger.report({
+			code,
+			reqId,
+			remoteIp: "",
+			upType: "jssdk-h5",
+			size: this.file.size,
+			time: Math.floor(this.uploadAt / 1e3),
+			port: getPortFromUrl((_a = this.uploadHost) === null || _a === void 0 ? void 0 : _a.getUrl()),
+			host: getDomainFromUrl((_b = this.uploadHost) === null || _b === void 0 ? void 0 : _b.getUrl()),
+			bytesSent: this.progress ? this.progress.total.loaded : 0,
+			duration: Math.floor(((/* @__PURE__ */ new Date()).getTime() - this.uploadAt) / 1e3)
+		});
+	};
+	Base.prototype.getProgressInfoItem = function(loaded, size, fromCache) {
+		return __assign$3({
+			size,
+			loaded,
+			percent: loaded / size * 100
+		}, fromCache == null ? {} : { fromCache });
+	};
+	return Base;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/upload/resume.js
+var __extends$1 = (function() {
+	var extendStatics = function(d, b) {
+		extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d, b) {
+			d.__proto__ = b;
+		} || function(d, b) {
+			for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+		};
+		return extendStatics(d, b);
+	};
+	return function(d, b) {
+		extendStatics(d, b);
+		function __() {
+			this.constructor = d;
+		}
+		d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+})();
+var __assign$2 = function() {
+	__assign$2 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$2.apply(this, arguments);
+};
+var __awaiter$4 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$4 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+/** 是否为正整数 */
+function isPositiveInteger(n) {
+	return /^[1-9]\d*$/.test(String(n));
+}
+var Resume = function(_super) {
+	__extends$1(Resume, _super);
+	function Resume() {
+		return _super !== null && _super.apply(this, arguments) || this;
+	}
+	/**
+	* @returns  {Promise<ResponseSuccess<any>>}
+	* @description 实现了 Base 的 run 接口，处理具体的分片上传事务，并抛出过程中的异常。
+	*/
+	Resume.prototype.run = function() {
+		return __awaiter$4(this, void 0, void 0, function() {
+			var pool, mkFileResponse, localKey, uploadChunks, error_1;
+			var _this = this;
+			return __generator$4(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.logger.info("start run Resume.");
+						if (!this.config.chunkSize || !isPositiveInteger(this.config.chunkSize)) throw new QiniuError(QiniuErrorName.InvalidChunkSize, "chunkSize must be a positive integer");
+						if (this.config.chunkSize > 1024) throw new QiniuError(QiniuErrorName.InvalidChunkSize, "chunkSize maximum value is 1024");
+						return [4, this.initBeforeUploadChunks()];
+					case 1:
+						_a.sent();
+						pool = new Pool(function(chunkInfo) {
+							return __awaiter$4(_this, void 0, void 0, function() {
+								return __generator$4(this, function(_a) {
+									switch (_a.label) {
+										case 0:
+											if (this.aborted) {
+												pool.abort();
+												throw new Error("pool is aborted");
+											}
+											return [4, this.uploadChunk(chunkInfo)];
+										case 1:
+											_a.sent();
+											return [2];
+									}
+								});
+							});
+						}, this.config.concurrentRequestLimit);
+						mkFileResponse = null;
+						localKey = this.getLocalKey();
+						uploadChunks = this.chunks.map(function(chunk, index) {
+							return pool.enqueue({
+								chunk,
+								index
+							});
+						});
+						_a.label = 2;
+					case 2:
+						_a.trys.push([
+							2,
+							5,
+							,
+							6
+						]);
+						return [4, Promise.all(uploadChunks)];
+					case 3:
+						_a.sent();
+						return [4, this.mkFileReq()];
+					case 4:
+						mkFileResponse = _a.sent();
+						return [3, 6];
+					case 5:
+						error_1 = _a.sent();
+						if (error_1 instanceof QiniuRequestError && (error_1.code === 612 || error_1.code === 400)) removeLocalFileInfo(localKey, this.logger);
+						throw error_1;
+					case 6:
+						removeLocalFileInfo(localKey, this.logger);
+						return [2, mkFileResponse];
+				}
+			});
+		});
+	};
+	Resume.prototype.uploadChunk = function(chunkInfo) {
+		return __awaiter$4(this, void 0, void 0, function() {
+			var index, chunk, cachedInfo, shouldCheckMD5, reuseSaved, md5, onProgress, requestOptions, response;
+			var _this = this;
+			return __generator$4(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						index = chunkInfo.index, chunk = chunkInfo.chunk;
+						cachedInfo = this.cachedUploadedList[index];
+						this.logger.info("upload part " + index + ", cache:", cachedInfo);
+						shouldCheckMD5 = this.config.checkByMD5;
+						reuseSaved = function() {
+							_this.usedCacheList[index] = true;
+							_this.updateChunkProgress(chunk.size, index);
+							_this.uploadedList[index] = cachedInfo;
+							_this.updateLocalCache();
+						};
+						if (cachedInfo && !shouldCheckMD5) {
+							reuseSaved();
+							return [2];
+						}
+						return [4, computeMd5(chunk)];
+					case 1:
+						md5 = _a.sent();
+						this.logger.info("computed part md5.", md5);
+						if (cachedInfo && md5 === cachedInfo.md5) {
+							reuseSaved();
+							return [2];
+						}
+						this.usedCacheList[index] = false;
+						onProgress = function(data) {
+							_this.updateChunkProgress(data.loaded, index);
+						};
+						requestOptions = {
+							body: chunk,
+							md5: this.config.checkByServer ? md5 : void 0,
+							onProgress,
+							onCreate: function(xhr) {
+								return _this.addXhr(xhr);
+							}
+						};
+						this.logger.info("part " + index + " start uploading.");
+						return [4, uploadChunk(this.token, this.key, chunkInfo.index + 1, this.getUploadInfo(), requestOptions)];
+					case 2:
+						response = _a.sent();
+						this.logger.info("part " + index + " upload completed.");
+						onProgress({
+							loaded: chunk.size,
+							total: chunk.size
+						});
+						this.uploadedList[index] = {
+							etag: response.data.etag,
+							md5: response.data.md5,
+							size: chunk.size
+						};
+						this.updateLocalCache();
+						return [2];
+				}
+			});
+		});
+	};
+	Resume.prototype.mkFileReq = function() {
+		return __awaiter$4(this, void 0, void 0, function() {
+			var data, result;
+			var _this = this;
+			return __generator$4(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						data = __assign$2(__assign$2(__assign$2({
+							parts: this.uploadedList.map(function(value, index) {
+								return {
+									etag: value.etag,
+									partNumber: index + 1
+								};
+							}),
+							fname: this.putExtra.fname
+						}, this.putExtra.mimeType && { mimeType: this.putExtra.mimeType }), this.putExtra.customVars && { customVars: this.putExtra.customVars }), this.putExtra.metadata && { metadata: this.putExtra.metadata });
+						this.logger.info("parts upload completed, make file.", data);
+						return [4, uploadComplete(this.token, this.key, this.getUploadInfo(), {
+							onCreate: function(xhr) {
+								return _this.addXhr(xhr);
+							},
+							body: JSON.stringify(data)
+						})];
+					case 1:
+						result = _a.sent();
+						this.logger.info("finish Resume Progress.");
+						this.updateMkFileProgress(1);
+						return [2, result];
+				}
+			});
+		});
+	};
+	Resume.prototype.initBeforeUploadChunks = function() {
+		return __awaiter$4(this, void 0, void 0, function() {
+			var cachedInfo, res, infoMessage;
+			return __generator$4(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.uploadedList = [];
+						this.usedCacheList = [];
+						cachedInfo = getLocalFileInfo(this.getLocalKey(), this.logger);
+						if (!!cachedInfo) return [3, 2];
+						this.logger.info("init upload parts from api.");
+						return [4, initUploadParts(this.token, this.bucketName, this.key, this.uploadHost.getUrl())];
+					case 1:
+						res = _a.sent();
+						this.logger.info("initd upload parts of id: " + res.data.uploadId + ".");
+						this.uploadId = res.data.uploadId;
+						this.cachedUploadedList = [];
+						return [3, 3];
+					case 2:
+						infoMessage = [
+							"resume upload parts from local cache,",
+							"total " + cachedInfo.data.length + " part,",
+							"id is " + cachedInfo.id + "."
+						];
+						this.logger.info(infoMessage.join(" "));
+						this.cachedUploadedList = cachedInfo.data;
+						this.uploadId = cachedInfo.id;
+						_a.label = 3;
+					case 3:
+						this.chunks = getChunks(this.file, this.config.chunkSize);
+						this.loaded = {
+							mkFileProgress: 0,
+							chunks: this.chunks.map(function(_) {
+								return 0;
+							})
+						};
+						this.notifyResumeProgress();
+						return [2];
+				}
+			});
+		});
+	};
+	Resume.prototype.getUploadInfo = function() {
+		return {
+			id: this.uploadId,
+			url: this.uploadHost.getUrl()
+		};
+	};
+	Resume.prototype.getLocalKey = function() {
+		return createLocalKey(this.file.name, this.key, this.file.size);
+	};
+	Resume.prototype.updateLocalCache = function() {
+		setLocalFileInfo(this.getLocalKey(), {
+			id: this.uploadId,
+			data: this.uploadedList
+		}, this.logger);
+	};
+	Resume.prototype.updateChunkProgress = function(loaded, index) {
+		this.loaded.chunks[index] = loaded;
+		this.notifyResumeProgress();
+	};
+	Resume.prototype.updateMkFileProgress = function(progress) {
+		this.loaded.mkFileProgress = progress;
+		this.notifyResumeProgress();
+	};
+	Resume.prototype.notifyResumeProgress = function() {
+		var _this = this;
+		this.progress = {
+			total: this.getProgressInfoItem(sum(this.loaded.chunks) + this.loaded.mkFileProgress, this.file.size + 1),
+			chunks: this.chunks.map(function(chunk, index) {
+				var fromCache = _this.usedCacheList[index];
+				return _this.getProgressInfoItem(_this.loaded.chunks[index], chunk.size, fromCache);
+			}),
+			uploadInfo: {
+				id: this.uploadId,
+				url: this.uploadHost.getUrl()
+			}
+		};
+		this.onData(this.progress);
+	};
+	return Resume;
+}(Base);
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/crc32.js
+var __awaiter$3 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$3 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+/**
+* 以下 class 实现参考
+* https://github.com/Stuk/jszip/blob/d4702a70834bd953d4c2d0bc155fad795076631a/lib/crc32.js
+* 该实现主要针对大文件优化、对计算的值进行了 `>>> 0` 运算（为与服务端保持一致）
+*/
+var CRC32 = function() {
+	function CRC32() {
+		this.crc = -1;
+		this.table = this.makeTable();
+	}
+	CRC32.prototype.makeTable = function() {
+		var table = new Array();
+		for (var i = 0; i < 256; i++) {
+			var t = i;
+			for (var j = 0; j < 8; j++) if (t & 1) t = t >>> 1 ^ 3988292384;
+			else t >>>= 1;
+			table[i] = t;
+		}
+		return table;
+	};
+	CRC32.prototype.append = function(data) {
+		var crc = this.crc;
+		for (var offset = 0; offset < data.byteLength; offset++) crc = crc >>> 8 ^ this.table[(crc ^ data[offset]) & 255];
+		this.crc = crc;
+	};
+	CRC32.prototype.compute = function() {
+		return (this.crc ^ -1) >>> 0;
+	};
+	CRC32.prototype.readAsUint8Array = function(file) {
+		return __awaiter$3(this, void 0, void 0, function() {
+			var _a;
+			return __generator$3(this, function(_b) {
+				switch (_b.label) {
+					case 0:
+						if (!(typeof file.arrayBuffer === "function")) return [3, 2];
+						_a = Uint8Array.bind;
+						return [4, file.arrayBuffer()];
+					case 1: return [2, new (_a.apply(Uint8Array, [void 0, _b.sent()]))()];
+					case 2: return [2, new Promise(function(resolve, reject) {
+						var reader = new FileReader();
+						reader.onload = function() {
+							if (reader.result == null) {
+								reject();
+								return;
+							}
+							if (typeof reader.result === "string") {
+								reject();
+								return;
+							}
+							resolve(new Uint8Array(reader.result));
+						};
+						reader.readAsArrayBuffer(file);
+					})];
+				}
+			});
+		});
+	};
+	CRC32.prototype.file = function(file) {
+		return __awaiter$3(this, void 0, void 0, function() {
+			var _a, count, index, start, end, chuck;
+			return __generator$3(this, function(_b) {
+				switch (_b.label) {
+					case 0:
+						if (!(file.size <= MB)) return [3, 2];
+						_a = this.append;
+						return [4, this.readAsUint8Array(file)];
+					case 1:
+						_a.apply(this, [_b.sent()]);
+						return [2, this.compute()];
+					case 2:
+						count = Math.ceil(file.size / MB);
+						index = 0;
+						_b.label = 3;
+					case 3:
+						if (!(index < count)) return [3, 6];
+						start = index * MB;
+						end = index === count - 1 ? file.size : start + MB;
+						return [4, this.readAsUint8Array(file.slice(start, end))];
+					case 4:
+						chuck = _b.sent();
+						this.append(new Uint8Array(chuck));
+						_b.label = 5;
+					case 5:
+						index++;
+						return [3, 3];
+					case 6: return [2, this.compute()];
+				}
+			});
+		});
+	};
+	CRC32.file = function(file) {
+		return new CRC32().file(file);
+	};
+	return CRC32;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/upload/direct.js
+var __extends = (function() {
+	var extendStatics = function(d, b) {
+		extendStatics = Object.setPrototypeOf || { __proto__: [] } instanceof Array && function(d, b) {
+			d.__proto__ = b;
+		} || function(d, b) {
+			for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+		};
+		return extendStatics(d, b);
+	};
+	return function(d, b) {
+		extendStatics(d, b);
+		function __() {
+			this.constructor = d;
+		}
+		d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+	};
+})();
+var __awaiter$2 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$2 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+var Direct = function(_super) {
+	__extends(Direct, _super);
+	function Direct() {
+		return _super !== null && _super.apply(this, arguments) || this;
+	}
+	Direct.prototype.run = function() {
+		return __awaiter$2(this, void 0, void 0, function() {
+			var formData, fileBlob, crcSign, customVars_1, metadata_1, result;
+			var _this = this;
+			return __generator$2(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.logger.info("start run Direct.");
+						formData = new FormData();
+						if (this.putExtra.mimeType) {
+							fileBlob = this.file.slice(0, this.file.size, this.putExtra.mimeType);
+							formData.append("file", fileBlob, this.putExtra.fname || this.file.name);
+						} else formData.append("file", this.file, this.putExtra.fname || this.file.name);
+						formData.append("token", this.token);
+						if (this.key != null) formData.append("key", this.key);
+						formData.append("fname", this.putExtra.fname);
+						if (!this.config.checkByServer) return [3, 2];
+						return [4, CRC32.file(this.file)];
+					case 1:
+						crcSign = _a.sent();
+						formData.append("crc32", crcSign.toString());
+						_a.label = 2;
+					case 2:
+						if (this.putExtra.customVars) {
+							this.logger.info("init customVars.");
+							customVars_1 = this.putExtra.customVars;
+							Object.keys(customVars_1).forEach(function(key) {
+								return formData.append(key, customVars_1[key].toString());
+							});
+							this.logger.info("customVars inited.");
+						}
+						if (this.putExtra.metadata) {
+							this.logger.info("init metadata.");
+							metadata_1 = this.putExtra.metadata;
+							Object.keys(metadata_1).forEach(function(key) {
+								return formData.append(key, metadata_1[key].toString());
+							});
+						}
+						this.logger.info("formData inited.");
+						return [4, direct(this.uploadHost.getUrl(), formData, {
+							onProgress: function(data) {
+								_this.updateDirectProgress(data.loaded, data.total);
+							},
+							onCreate: function(xhr) {
+								return _this.addXhr(xhr);
+							}
+						})];
+					case 3:
+						result = _a.sent();
+						this.logger.info("Direct progress finish.");
+						this.finishDirectProgress();
+						return [2, result];
+				}
+			});
+		});
+	};
+	Direct.prototype.updateDirectProgress = function(loaded, total) {
+		this.progress = { total: this.getProgressInfoItem(loaded, total + 1) };
+		this.onData(this.progress);
+	};
+	Direct.prototype.finishDirectProgress = function() {
+		if (!this.progress) {
+			this.logger.warn("progress is null.");
+			this.progress = { total: this.getProgressInfoItem(this.file.size, this.file.size) };
+			this.onData(this.progress);
+			return;
+		}
+		var total = this.progress.total;
+		this.progress = { total: this.getProgressInfoItem(total.loaded + 1, total.size) };
+		this.onData(this.progress);
+	};
+	return Direct;
+}(Base);
+//#endregion
+//#region node_modules/qiniu-js/esm/logger/report-v3.js
+/**
+* @param  {string} token 上传使用的 token
+* @param  {V3LogInfo} data 上报的统计数据
+* @param  {number} retry 重试的次数，默认值 3
+* @description v3 版本的日志上传接口，参考文档 https://github.com/qbox/product/blob/master/kodo/uplog.md#%E7%89%88%E6%9C%AC-3。
+*/
+function reportV3(token, data, retry) {
+	if (retry === void 0) retry = 3;
+	var xhr = createXHR();
+	xhr.open("POST", "https://uplog.qbox.me/log/3");
+	xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+	xhr.setRequestHeader("Authorization", getAuthHeaders(token).Authorization);
+	xhr.onreadystatechange = function() {
+		if (xhr.readyState === 4 && xhr.status !== 200 && retry > 0) reportV3(token, data, retry - 1);
+	};
+	var stringifyData = [
+		data.code || "",
+		data.reqId || "",
+		data.host || "",
+		data.remoteIp || "",
+		data.port || "",
+		data.duration || "",
+		data.time || "",
+		data.bytesSent || "",
+		data.upType || "",
+		data.size || ""
+	].join(",");
+	xhr.send(stringifyData);
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/logger/index.js
+var __read$2 = function(o, n) {
+	var m = typeof Symbol === "function" && o[Symbol.iterator];
+	if (!m) return o;
+	var i = m.call(o), r, ar = [], e;
+	try {
+		while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+	} catch (error) {
+		e = { error };
+	} finally {
+		try {
+			if (r && !r.done && (m = i["return"])) m.call(i);
+		} finally {
+			if (e) throw e.error;
+		}
+	}
+	return ar;
+};
+var __spread$2 = function() {
+	for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read$2(arguments[i]));
+	return ar;
+};
+var Logger = function() {
+	function Logger(token, disableReport, level, prefix) {
+		if (disableReport === void 0) disableReport = true;
+		if (level === void 0) level = "OFF";
+		if (prefix === void 0) prefix = "UPLOAD";
+		this.token = token;
+		this.disableReport = disableReport;
+		this.level = level;
+		this.prefix = prefix;
+		this.id = ++Logger.id;
+	}
+	Logger.prototype.getPrintPrefix = function(level) {
+		return "Qiniu-JS-SDK [" + level + "][" + this.prefix + "#" + this.id + "]:";
+	};
+	/**
+	* @param  {V3LogInfo} data 上报的数据。
+	* @param  {boolean} retry 重试次数，可选，默认为 3。
+	* @description 向服务端上报统计信息。
+	*/
+	Logger.prototype.report = function(data, retry) {
+		if (this.disableReport) return;
+		try {
+			reportV3(this.token, data, retry);
+		} catch (error) {
+			this.warn(error);
+		}
+	};
+	/**
+	* @param  {unknown[]} ...args
+	* @description 输出 info 级别的调试信息。
+	*/
+	Logger.prototype.info = function() {
+		var args = [];
+		for (var _i = 0; _i < arguments.length; _i++) args[_i] = arguments[_i];
+		if (["INFO"].includes(this.level)) console.log.apply(console, __spread$2([this.getPrintPrefix("INFO")], args));
+	};
+	/**
+	* @param  {unknown[]} ...args
+	* @description 输出 warn 级别的调试信息。
+	*/
+	Logger.prototype.warn = function() {
+		var args = [];
+		for (var _i = 0; _i < arguments.length; _i++) args[_i] = arguments[_i];
+		if (["INFO", "WARN"].includes(this.level)) console.warn.apply(console, __spread$2([this.getPrintPrefix("WARN")], args));
+	};
+	/**
+	* @param  {unknown[]} ...args
+	* @description 输出 error 级别的调试信息。
+	*/
+	Logger.prototype.error = function() {
+		var args = [];
+		for (var _i = 0; _i < arguments.length; _i++) args[_i] = arguments[_i];
+		if ([
+			"INFO",
+			"WARN",
+			"ERROR"
+		].includes(this.level)) console.error.apply(console, __spread$2([this.getPrintPrefix("ERROR")], args));
+	};
+	Logger.id = 0;
+	return Logger;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/upload/hosts.js
+var __awaiter$1 = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator$1 = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+var __read$1 = function(o, n) {
+	var m = typeof Symbol === "function" && o[Symbol.iterator];
+	if (!m) return o;
+	var i = m.call(o), r, ar = [], e;
+	try {
+		while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+	} catch (error) {
+		e = { error };
+	} finally {
+		try {
+			if (r && !r.done && (m = i["return"])) m.call(i);
+		} finally {
+			if (e) throw e.error;
+		}
+	}
+	return ar;
+};
+var __spread$1 = function() {
+	for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read$1(arguments[i]));
+	return ar;
+};
+/**
+* @description 解冻时间，key 是 host，value 为解冻时间
+*/
+var unfreezeTimeMap = /* @__PURE__ */ new Map();
+var Host = function() {
+	function Host(host, protocol) {
+		this.host = host;
+		this.protocol = protocol;
+	}
+	/**
+	* @description 当前 host 是否为冻结状态
+	*/
+	Host.prototype.isFrozen = function() {
+		var currentTime = (/* @__PURE__ */ new Date()).getTime();
+		var unfreezeTime = unfreezeTimeMap.get(this.host);
+		return unfreezeTime != null && unfreezeTime >= currentTime;
+	};
+	/**
+	* @param  {number} time 单位秒，默认 20s
+	* @description 冻结该 host 对象，该 host 将在指定时间内不可用
+	*/
+	Host.prototype.freeze = function(time) {
+		if (time === void 0) time = 20;
+		var unfreezeTime = (/* @__PURE__ */ new Date()).getTime() + time * 1e3;
+		unfreezeTimeMap.set(this.host, unfreezeTime);
+	};
+	/**
+	* @description 解冻该 host
+	*/
+	Host.prototype.unfreeze = function() {
+		unfreezeTimeMap["delete"](this.host);
+	};
+	/**
+	* @description 获取当前 host 的完整 url
+	*/
+	Host.prototype.getUrl = function() {
+		return this.protocol + "://" + this.host;
+	};
+	/**
+	* @description 获取解冻时间
+	*/
+	Host.prototype.getUnfreezeTime = function() {
+		return unfreezeTimeMap.get(this.host);
+	};
+	return Host;
+}();
+var HostPool = function() {
+	/**
+	* @param  {string[]} initHosts
+	* @description 如果在构造时传入 initHosts，则该 host 池始终使用传入的 initHosts 做为可用的数据
+	*/
+	function HostPool(initHosts) {
+		if (initHosts === void 0) initHosts = [];
+		this.initHosts = initHosts;
+		/**
+		* @description 缓存的 host 表，以 bucket 和 accessKey 作为 key
+		*/
+		this.cachedHostsMap = /* @__PURE__ */ new Map();
+	}
+	/**
+	* @param  {string} accessKey
+	* @param  {string} bucketName
+	* @param  {string[]} hosts
+	* @param  {InternalConfig['upprotocol']} protocol
+	* @returns  {void}
+	* @description 注册可用 host
+	*/
+	HostPool.prototype.register = function(accessKey, bucketName, hosts, protocol) {
+		this.cachedHostsMap.set(accessKey + "@" + bucketName, hosts.map(function(host) {
+			return new Host(host, protocol);
+		}));
+	};
+	/**
+	* @param  {string} accessKey
+	* @param  {string} bucketName
+	* @param  {InternalConfig['upprotocol']} protocol
+	* @returns  {Promise<void>}
+	* @description 刷新最新的 host 数据，如果用户在构造时该类时传入了 host 或者已经存在缓存则不会发起请求
+	*/
+	HostPool.prototype.refresh = function(accessKey, bucketName, protocol) {
+		var _a, _b, _c, _d;
+		return __awaiter$1(this, void 0, void 0, function() {
+			var cachedHostList, response, stashHosts;
+			return __generator$1(this, function(_e) {
+				switch (_e.label) {
+					case 0:
+						cachedHostList = this.cachedHostsMap.get(accessKey + "@" + bucketName) || [];
+						if (cachedHostList.length > 0) return [2];
+						if (this.initHosts.length > 0) {
+							this.register(accessKey, bucketName, this.initHosts, protocol);
+							return [2];
+						}
+						return [4, getUpHosts(accessKey, bucketName, protocol)];
+					case 1:
+						response = _e.sent();
+						if ((response === null || response === void 0 ? void 0 : response.data) != null) {
+							stashHosts = __spread$1(((_b = (_a = response.data.up) === null || _a === void 0 ? void 0 : _a.acc) === null || _b === void 0 ? void 0 : _b.main) || [], ((_d = (_c = response.data.up) === null || _c === void 0 ? void 0 : _c.acc) === null || _d === void 0 ? void 0 : _d.backup) || []);
+							this.register(accessKey, bucketName, stashHosts, protocol);
+						}
+						return [2];
+				}
+			});
+		});
+	};
+	/**
+	* @param  {string} accessKey
+	* @param  {string} bucketName
+	* @param  {InternalConfig['upprotocol']} protocol
+	* @returns  {Promise<Host | null>}
+	* @description 获取一个可用的上传 Host，排除已冻结的
+	*/
+	HostPool.prototype.getUp = function(accessKey, bucketName, protocol) {
+		return __awaiter$1(this, void 0, void 0, function() {
+			var cachedHostList, availableHostList, priorityQueue;
+			return __generator$1(this, function(_a) {
+				switch (_a.label) {
+					case 0: return [4, this.refresh(accessKey, bucketName, protocol)];
+					case 1:
+						_a.sent();
+						cachedHostList = this.cachedHostsMap.get(accessKey + "@" + bucketName) || [];
+						if (cachedHostList.length === 0) return [2, null];
+						availableHostList = cachedHostList.filter(function(host) {
+							return !host.isFrozen();
+						});
+						if (availableHostList.length > 0) return [2, availableHostList[0]];
+						priorityQueue = cachedHostList.slice().sort(function(hostA, hostB) {
+							return (hostA.getUnfreezeTime() || 0) - (hostB.getUnfreezeTime() || 0);
+						});
+						return [2, priorityQueue[0]];
+				}
+			});
+		});
+	};
+	return HostPool;
+}();
+//#endregion
+//#region node_modules/qiniu-js/esm/upload/index.js
+function createUploadManager(options, handlers, hostPool, logger) {
+	if (options.config && options.config.forceDirect) {
+		logger.info("ues forceDirect mode.");
+		return new Direct(options, handlers, hostPool, logger);
+	}
+	if (options.file.size > 4 * MB) {
+		logger.info("file size over 4M, use Resume.");
+		return new Resume(options, handlers, hostPool, logger);
+	}
+	logger.info("file size less or equal than 4M, use Direct.");
+	return new Direct(options, handlers, hostPool, logger);
+}
+/**
+* @param file 上传文件
+* @param key 目标文件名
+* @param token 上传凭证
+* @param putExtra 上传文件的相关资源信息配置
+* @param config 上传任务的配置
+* @returns 返回用于上传任务的可观察对象
+*/
+function upload(file, key, token, putExtra, config) {
+	var logger = new Logger(token, config === null || config === void 0 ? void 0 : config.disableStatisticsReport, config === null || config === void 0 ? void 0 : config.debugLogLevel, file.name);
+	var options = {
+		file,
+		key,
+		token,
+		putExtra,
+		config: normalizeUploadConfig(config, logger)
+	};
+	var hostPool = new HostPool(options.config.uphost);
+	return new Observable(function(observer) {
+		var manager = createUploadManager(options, {
+			onData: function(data) {
+				return observer.next(data);
+			},
+			onError: function(err) {
+				return observer.error(err);
+			},
+			onComplete: function(res) {
+				return observer.complete(res);
+			}
+		}, hostPool, logger);
+		manager.putFile();
+		return manager.stop.bind(manager);
+	});
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/config.js
+var __assign$1 = function() {
+	__assign$1 = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign$1.apply(this, arguments);
+};
+var __rest = function(s, e) {
+	var t = {};
+	for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0) t[p] = s[p];
+	if (s != null && typeof Object.getOwnPropertySymbols === "function") {
+		for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0 && Object.prototype.propertyIsEnumerable.call(s, p[i])) t[p[i]] = s[p[i]];
+	}
+	return t;
+};
+var __read = function(o, n) {
+	var m = typeof Symbol === "function" && o[Symbol.iterator];
+	if (!m) return o;
+	var i = m.call(o), r, ar = [], e;
+	try {
+		while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
+	} catch (error) {
+		e = { error };
+	} finally {
+		try {
+			if (r && !r.done && (m = i["return"])) m.call(i);
+		} finally {
+			if (e) throw e.error;
+		}
+	}
+	return ar;
+};
+var __spread = function() {
+	for (var ar = [], i = 0; i < arguments.length; i++) ar = ar.concat(__read(arguments[i]));
+	return ar;
+};
+function normalizeUploadConfig(config, logger) {
+	var _a = __assign$1({}, config), upprotocol = _a.upprotocol, uphost = _a.uphost, otherConfig = __rest(_a, ["upprotocol", "uphost"]);
+	var normalizeConfig = __assign$1({
+		uphost: [],
+		retryCount: 3,
+		checkByMD5: false,
+		forceDirect: false,
+		useCdnDomain: true,
+		checkByServer: true,
+		concurrentRequestLimit: 3,
+		chunkSize: 4,
+		upprotocol: "https",
+		debugLogLevel: "OFF",
+		disableStatisticsReport: false
+	}, otherConfig);
+	if (upprotocol) normalizeConfig.upprotocol = upprotocol.replace(/:$/, "");
+	var hostList = [];
+	if (logger && (config === null || config === void 0 ? void 0 : config.uphost) != null && (config === null || config === void 0 ? void 0 : config.region) != null) logger.warn("do not use both the uphost and region config.");
+	if (uphost) if (Array.isArray(uphost)) hostList.push.apply(hostList, __spread(uphost));
+	else hostList.push(uphost);
+	else if (normalizeConfig === null || normalizeConfig === void 0 ? void 0 : normalizeConfig.region) {
+		var hostMap = regionUphostMap[normalizeConfig === null || normalizeConfig === void 0 ? void 0 : normalizeConfig.region];
+		if (normalizeConfig.useCdnDomain) hostList.push.apply(hostList, __spread(hostMap.cdnUphost));
+		else hostList.push.apply(hostList, __spread(hostMap.srcUphost));
+	}
+	return __assign$1(__assign$1({}, normalizeConfig), { uphost: hostList.filter(Boolean) });
+}
+//#endregion
+//#region node_modules/qiniu-js/esm/utils/compress.js
+var __assign = function() {
+	__assign = Object.assign || function(t) {
+		for (var s, i = 1, n = arguments.length; i < n; i++) {
+			s = arguments[i];
+			for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p)) t[p] = s[p];
+		}
+		return t;
+	};
+	return __assign.apply(this, arguments);
+};
+var __awaiter = function(thisArg, _arguments, P, generator) {
+	function adopt(value) {
+		return value instanceof P ? value : new P(function(resolve) {
+			resolve(value);
+		});
+	}
+	return new (P || (P = Promise))(function(resolve, reject) {
+		function fulfilled(value) {
+			try {
+				step(generator.next(value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function rejected(value) {
+			try {
+				step(generator["throw"](value));
+			} catch (e) {
+				reject(e);
+			}
+		}
+		function step(result) {
+			result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+		}
+		step((generator = generator.apply(thisArg, _arguments || [])).next());
+	});
+};
+var __generator = function(thisArg, body) {
+	var _ = {
+		label: 0,
+		sent: function() {
+			if (t[0] & 1) throw t[1];
+			return t[1];
+		},
+		trys: [],
+		ops: []
+	}, f, y, t, g;
+	return g = {
+		next: verb(0),
+		"throw": verb(1),
+		"return": verb(2)
+	}, typeof Symbol === "function" && (g[Symbol.iterator] = function() {
+		return this;
+	}), g;
+	function verb(n) {
+		return function(v) {
+			return step([n, v]);
+		};
+	}
+	function step(op) {
+		if (f) throw new TypeError("Generator is already executing.");
+		while (_) try {
+			if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
+			if (y = 0, t) op = [op[0] & 2, t.value];
+			switch (op[0]) {
+				case 0:
+				case 1:
+					t = op;
+					break;
+				case 4:
+					_.label++;
+					return {
+						value: op[1],
+						done: false
+					};
+				case 5:
+					_.label++;
+					y = op[1];
+					op = [0];
+					continue;
+				case 7:
+					op = _.ops.pop();
+					_.trys.pop();
+					continue;
+				default:
+					if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) {
+						_ = 0;
+						continue;
+					}
+					if (op[0] === 3 && (!t || op[1] > t[0] && op[1] < t[3])) {
+						_.label = op[1];
+						break;
+					}
+					if (op[0] === 6 && _.label < t[1]) {
+						_.label = t[1];
+						t = op;
+						break;
+					}
+					if (t && _.label < t[2]) {
+						_.label = t[2];
+						_.ops.push(op);
+						break;
+					}
+					if (t[2]) _.ops.pop();
+					_.trys.pop();
+					continue;
+			}
+			op = body.call(thisArg, _);
+		} catch (e) {
+			op = [6, e];
+			y = 0;
+		} finally {
+			f = t = 0;
+		}
+		if (op[0] & 5) throw op[1];
+		return {
+			value: op[0] ? op[1] : void 0,
+			done: true
+		};
+	}
+};
+var mimeTypes = {
+	PNG: "image/png",
+	JPEG: "image/jpeg",
+	WEBP: "image/webp",
+	BMP: "image/bmp"
+};
+var maxSteps = 4;
+var scaleFactor = Math.log(2);
+var supportMimeTypes = Object.keys(mimeTypes).map(function(type) {
+	return mimeTypes[type];
+});
+var defaultType = mimeTypes.JPEG;
+function isSupportedType(type) {
+	return supportMimeTypes.includes(type);
+}
+var Compress = function() {
+	function Compress(file, config) {
+		this.file = file;
+		this.config = config;
+		this.config = __assign({
+			quality: .92,
+			noCompressIfLarger: false
+		}, this.config);
+	}
+	Compress.prototype.process = function() {
+		return __awaiter(this, void 0, void 0, function() {
+			var srcDimension, originImage, canvas, scale, scaleCanvas, distBlob;
+			return __generator(this, function(_a) {
+				switch (_a.label) {
+					case 0:
+						this.outputType = this.file.type;
+						srcDimension = {};
+						if (!isSupportedType(this.file.type)) throw new QiniuError(QiniuErrorName.UnsupportedFileType, "unsupported file type: " + this.file.type);
+						return [4, this.getOriginImage()];
+					case 1:
+						originImage = _a.sent();
+						return [4, this.getCanvas(originImage)];
+					case 2:
+						canvas = _a.sent();
+						scale = 1;
+						if (this.config.maxWidth) scale = Math.min(1, this.config.maxWidth / canvas.width);
+						if (this.config.maxHeight) scale = Math.min(1, scale, this.config.maxHeight / canvas.height);
+						srcDimension.width = canvas.width;
+						srcDimension.height = canvas.height;
+						return [4, this.doScale(canvas, scale)];
+					case 3:
+						scaleCanvas = _a.sent();
+						distBlob = this.toBlob(scaleCanvas);
+						if (distBlob.size > this.file.size && this.config.noCompressIfLarger) return [2, {
+							dist: this.file,
+							width: srcDimension.width,
+							height: srcDimension.height
+						}];
+						return [2, {
+							dist: distBlob,
+							width: scaleCanvas.width,
+							height: scaleCanvas.height
+						}];
+				}
+			});
+		});
+	};
+	Compress.prototype.clear = function(ctx, width, height) {
+		if (this.outputType === defaultType) {
+			ctx.fillStyle = "#fff";
+			ctx.fillRect(0, 0, width, height);
+		} else ctx.clearRect(0, 0, width, height);
+	};
+	/** 通过 file 初始化 image 对象 */
+	Compress.prototype.getOriginImage = function() {
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			var url = createObjectURL(_this.file);
+			var img = new Image();
+			img.onload = function() {
+				resolve(img);
+			};
+			img.onerror = function() {
+				reject("image load error");
+			};
+			img.src = url;
+		});
+	};
+	Compress.prototype.getCanvas = function(img) {
+		var _this = this;
+		return new Promise(function(resolve, reject) {
+			var canvas = document.createElement("canvas");
+			var context = canvas.getContext("2d");
+			if (!context) {
+				reject(new QiniuError(QiniuErrorName.GetCanvasContextFailed, "context is null"));
+				return;
+			}
+			var width = img.width, height = img.height;
+			canvas.height = height;
+			canvas.width = width;
+			_this.clear(context, width, height);
+			context.drawImage(img, 0, 0);
+			resolve(canvas);
+		});
+	};
+	Compress.prototype.doScale = function(source, scale) {
+		return __awaiter(this, void 0, void 0, function() {
+			var sctx, steps, factor, mirror, mctx, width, height, originWidth, originHeight, src, context, i, dw, dh, canvas, data;
+			return __generator(this, function(_a) {
+				if (scale === 1) return [2, source];
+				sctx = source.getContext("2d");
+				steps = Math.min(maxSteps, Math.ceil(1 / scale / scaleFactor));
+				factor = Math.pow(scale, 1 / steps);
+				mirror = document.createElement("canvas");
+				mctx = mirror.getContext("2d");
+				width = source.width, height = source.height;
+				originWidth = width;
+				originHeight = height;
+				mirror.width = width;
+				mirror.height = height;
+				if (!mctx || !sctx) throw new QiniuError(QiniuErrorName.GetCanvasContextFailed, "mctx or sctx can't be null");
+				for (i = 0; i < steps; i++) {
+					dw = width * factor | 0;
+					dh = height * factor | 0;
+					if (i === steps - 1) {
+						dw = originWidth * scale;
+						dh = originHeight * scale;
+					}
+					if (i % 2 === 0) {
+						src = source;
+						context = mctx;
+					} else {
+						src = mirror;
+						context = sctx;
+					}
+					this.clear(context, width, height);
+					context.drawImage(src, 0, 0, width, height, 0, 0, dw, dh);
+					width = dw;
+					height = dh;
+				}
+				canvas = src === source ? mirror : source;
+				data = context.getImageData(0, 0, width, height);
+				canvas.width = width;
+				canvas.height = height;
+				context.putImageData(data, 0, 0);
+				return [2, canvas];
+			});
+		});
+	};
+	/** 这里把 base64 字符串转为 blob 对象 */
+	Compress.prototype.toBlob = function(result) {
+		var dataURL = result.toDataURL(this.outputType, this.config.quality);
+		var buffer = atob(dataURL.split(",")[1]).split("").map(function(char) {
+			return char.charCodeAt(0);
+		});
+		return new Blob([new Uint8Array(buffer)], { type: this.outputType });
+	};
+	return Compress;
+}();
+var compressImage = function(file, options) {
+	return new Compress(file, options).process();
+};
+//#endregion
+//#region node_modules/qiniu-js/esm/image/index.js
+function getImageUrl(key, domain) {
+	key = encodeURIComponent(key);
+	if (domain.slice(domain.length - 1) !== "/") domain += "/";
+	return domain + key;
+}
+function imageView2(op, key, domain) {
+	if (!/^\d$/.test(String(op.mode))) throw "mode should be number in imageView2";
+	var mode = op.mode, w = op.w, h = op.h, q = op.q, format = op.format;
+	if (!w && !h) throw "param w and h is empty in imageView2";
+	var imageUrl = "imageView2/" + encodeURIComponent(mode);
+	imageUrl += w ? "/w/" + encodeURIComponent(w) : "";
+	imageUrl += h ? "/h/" + encodeURIComponent(h) : "";
+	imageUrl += q ? "/q/" + encodeURIComponent(q) : "";
+	imageUrl += format ? "/format/" + encodeURIComponent(format) : "";
+	if (key && domain) imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
+	return imageUrl;
+}
+function imageMogr2(op, key, domain) {
+	var autoOrient = op["auto-orient"];
+	var thumbnail = op.thumbnail, strip = op.strip, gravity = op.gravity, crop = op.crop, quality = op.quality, rotate = op.rotate, format = op.format, blur = op.blur;
+	var imageUrl = "imageMogr2";
+	imageUrl += autoOrient ? "/auto-orient" : "";
+	imageUrl += thumbnail ? "/thumbnail/" + encodeURIComponent(thumbnail) : "";
+	imageUrl += strip ? "/strip" : "";
+	imageUrl += gravity ? "/gravity/" + encodeURIComponent(gravity) : "";
+	imageUrl += quality ? "/quality/" + encodeURIComponent(quality) : "";
+	imageUrl += crop ? "/crop/" + encodeURIComponent(crop) : "";
+	imageUrl += rotate ? "/rotate/" + encodeURIComponent(rotate) : "";
+	imageUrl += format ? "/format/" + encodeURIComponent(format) : "";
+	imageUrl += blur ? "/blur/" + encodeURIComponent(blur) : "";
+	if (key && domain) imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
+	return imageUrl;
+}
+function watermark(op, key, domain) {
+	var mode = op.mode;
+	if (!mode) throw "mode can't be empty in watermark";
+	var imageUrl = "watermark/" + mode;
+	if (mode !== 1 && mode !== 2) throw "mode is wrong";
+	if (mode === 1) {
+		var image = op.image;
+		if (!image) throw "image can't be empty in watermark";
+		imageUrl += image ? "/image/" + urlSafeBase64Encode(image) : "";
+	}
+	if (mode === 2) {
+		var text = op.text, font = op.font, fontsize = op.fontsize, fill = op.fill;
+		if (!text) throw "text can't be empty in watermark";
+		imageUrl += text ? "/text/" + urlSafeBase64Encode(text) : "";
+		imageUrl += font ? "/font/" + urlSafeBase64Encode(font) : "";
+		imageUrl += fontsize ? "/fontsize/" + fontsize : "";
+		imageUrl += fill ? "/fill/" + urlSafeBase64Encode(fill) : "";
+	}
+	var dissolve = op.dissolve, gravity = op.gravity, dx = op.dx, dy = op.dy;
+	imageUrl += dissolve ? "/dissolve/" + encodeURIComponent(dissolve) : "";
+	imageUrl += gravity ? "/gravity/" + encodeURIComponent(gravity) : "";
+	imageUrl += dx ? "/dx/" + encodeURIComponent(dx) : "";
+	imageUrl += dy ? "/dy/" + encodeURIComponent(dy) : "";
+	if (key && domain) imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
+	return imageUrl;
+}
+function imageInfo(key, domain) {
+	return request(getImageUrl(key, domain) + "?imageInfo", { method: "GET" });
+}
+function exif(key, domain) {
+	return request(getImageUrl(key, domain) + "?exif", { method: "GET" });
+}
+function pipeline(arr, key, domain) {
+	var isArray = Object.prototype.toString.call(arr) === "[object Array]";
+	var option;
+	var errOp = false;
+	var imageUrl = "";
+	if (isArray) {
+		for (var i = 0, len = arr.length; i < len; i++) {
+			option = arr[i];
+			if (!option.fop) throw "fop can't be empty in pipeline";
+			switch (option.fop) {
+				case "watermark":
+					imageUrl += watermark(option) + "|";
+					break;
+				case "imageView2":
+					imageUrl += imageView2(option) + "|";
+					break;
+				case "imageMogr2":
+					imageUrl += imageMogr2(option) + "|";
+					break;
+				default:
+					errOp = true;
+					break;
+			}
+			if (errOp) throw "fop is wrong in pipeline";
+		}
+		if (key && domain) {
+			imageUrl = getImageUrl(key, domain) + "?" + imageUrl;
+			var length_1 = imageUrl.length;
+			if (imageUrl.slice(length_1 - 1) === "|") imageUrl = imageUrl.slice(0, length_1 - 1);
+		}
+		return imageUrl;
+	}
+	throw "pipeline's first param should be array";
+}
+//#endregion
+export { QiniuError, QiniuErrorName, QiniuNetworkError, QiniuRequestError, compressImage, deleteUploadedChunks, exif, getHeadersForChunkUpload, getHeadersForMkFile, getUploadUrl, imageInfo, imageMogr2, pipeline, region, upload, urlSafeBase64Decode, urlSafeBase64Encode, watermark };
+
+//# sourceMappingURL=qiniu-js.js.map

@@ -1,0 +1,88 @@
+[
+  {
+    "name": "default-scan-no-selector",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions"
+    ]
+  },
+  {
+    "name": "aurakey-role-unified-login",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange",
+      "GET /api/v1/aurakey/admin/dashboard/stats",
+      "GET /api/v1/aurakey/admin/dashboard/stats"
+    ]
+  },
+  {
+    "name": "multiple-role-modules",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange",
+      "GET /api/v1/time-library/books",
+      "GET /api/v1/time-library/books",
+      "GET /api/v1/aurakey/admin/dashboard/stats",
+      "GET /api/v1/aurakey/admin/dashboard/stats"
+    ]
+  },
+  {
+    "name": "superuser-all-modules",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange",
+      "GET /api/v1/admin/users",
+      "GET /api/v1/admin/users"
+    ]
+  },
+  {
+    "name": "ordinary-user-rejected",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange"
+    ]
+  },
+  {
+    "name": "wrong-token-scope-rejected",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange"
+    ]
+  },
+  {
+    "name": "system-superuser-flag-required",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "GET /api/v1/auth/scan/sessions/00000000-0000-4000-8000-000000000001",
+      "POST /api/v1/auth/scan/exchange"
+    ]
+  },
+  {
+    "name": "legacy-v1-cache-cleared",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions"
+    ]
+  },
+  {
+    "name": "phone-login-backup",
+    "status": "PASS",
+    "requestPaths": [
+      "POST /api/v1/auth/scan/sessions",
+      "POST /api/v1/auth/sms/send",
+      "POST /api/v1/auth/phone/login"
+    ]
+  }
+]

@@ -270,8 +270,14 @@ export async function uploadFiles(files: any | any[]): Promise<ResourceResponse[
   const confirmPayloads = await Promise.all(uploadTasks);
 
   try {
-    const response = await request.post('/api/v1/storage/confirm-upload', confirmPayloads);
-    return response.data.data;
+    // 后端确认上传接口接收单个资源对象；逐个确认后仍以数组返回兼容调用方。
+    const responses = await Promise.all(
+      confirmPayloads.map((payload) => request.post('/api/v1/storage/confirm-upload', payload))
+    );
+    return responses.flatMap((response) => {
+      const data = response.data.data;
+      return Array.isArray(data) ? data : [data];
+    });
   } catch (error) {
     if (isWeb) Message.error('上传确认失败，请重试');
     throw error;

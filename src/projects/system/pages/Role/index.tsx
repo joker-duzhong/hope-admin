@@ -32,7 +32,7 @@ export default function RoleList() {
     setEditVisible(true);
   };
 
-  const handleDelete = async (roleId: number) => {
+  const handleDelete = async (roleId: string) => {
     try {
       await deleteRoleApi(roleId);
       Message.success('角色已删除');

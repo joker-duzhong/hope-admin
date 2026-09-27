@@ -1,9 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { Layout as ArcoLayout, Menu, Button, Breadcrumb } from '@arco-design/web-react';
+import { Layout as ArcoLayout, Menu, Button, Breadcrumb, Tag } from '@arco-design/web-react';
 import { Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useUserStore } from '@/core/store/useUserStore';
-import { IconDashboard } from '@arco-design/web-react/icon';
+import { IconDashboard, IconStop } from '@arco-design/web-react/icon';
 import { appModules } from '@/router/modules';
+import { isModuleOffShelf } from '@/core/types/module';
+import { mergeAppCatalog } from '@/core/utils/appModules';
+import { useAppCatalogStore } from '@/core/store/useAppCatalogStore';
+import { ADMIN_APP_SCOPE } from '@/core/config';
 
 const MenuItem = Menu.Item;
 const SubMenu = Menu.SubMenu;
@@ -14,33 +18,53 @@ const Content = ArcoLayout.Content;
 const AppLayout: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const { logout, userInfo } = useUserStore();
+  const { logout, userInfo, token, appScope } = useUserStore();
+  const appCatalog = useAppCatalogStore((state) => state.apps);
+  const fetchAppCatalog = useAppCatalogStore((state) => state.fetchAppCatalog);
+  const resetAppCatalog = useAppCatalogStore((state) => state.reset);
   const [manualOpenKeys, setManualOpenKeys] = useState<string[]>([]);
 
+  useEffect(() => {
+    if (token && appScope === ADMIN_APP_SCOPE) {
+      void fetchAppCatalog();
+    } else {
+      resetAppCatalog();
+    }
+  }, [appScope, fetchAppCatalog, resetAppCatalog, token]);
+
+  const effectiveAppModules = useMemo(
+    () => mergeAppCatalog(appModules, appCatalog),
+    [appCatalog],
+  );
+
   const handleLogout = () => {
+    resetAppCatalog();
     logout();
-    navigate('/login');
+    navigate('/login', { replace: true });
   };
 
-  const userRoleCodes = useMemo(
-    () => (userInfo?.roles || []).map((r) => r.code || r.name),
+  const userRoles = useMemo(
+    () => userInfo?.roles || [],
     [userInfo?.roles]
   );
 
   const isSuperAdmin = userInfo?.is_superuser === true;
-  const hasMultipleRoles = userRoleCodes.length > 1;
+  const hasMultipleRoles = userRoles.length > 1;
   // 规则：超级管理员默认按多角色处理
   const useGroupedMenu = isSuperAdmin || hasMultipleRoles;
 
   // 过滤用户可见菜单并按模块分组
   const visibleModuleMenus = useMemo(
     () =>
-      appModules
+      effectiveAppModules
+        .filter((module) => isSuperAdmin || !module.moduleMeta.superuserOnly)
         .map((module) => {
           const visibleMenus = module.menuMeta.filter((item) => {
             if (isSuperAdmin) return true;
             if (!item.roles || item.roles.length === 0) return true;
-            return userRoleCodes.some((code) => item.roles!.includes(code));
+            return userRoles.some(
+              (role) => role.scope === module.moduleMeta.appScope && item.roles!.includes(role.code)
+            );
           });
           return {
             moduleMeta: module.moduleMeta,
@@ -48,39 +72,43 @@ const AppLayout: React.FC = () => {
           };
         })
         .filter((module) => module.menuMeta.length > 0),
-    [isSuperAdmin, userRoleCodes]
+    [effectiveAppModules, isSuperAdmin, userRoles]
   );
 
-  const visibleFlatMenus = useMemo(
-    () => visibleModuleMenus.flatMap((module) => module.menuMeta),
+  const activeModuleMenus = useMemo(
+    () =>
+      visibleModuleMenus.filter((module) => {
+        // 下架状态只由 is_active=false 决定；角色缺失由上面的菜单过滤处理。
+        return !isModuleOffShelf(module.moduleMeta);
+      }),
     [visibleModuleMenus]
   );
 
-  const routeOpenKeys = useMemo(
+  const offShelfModuleMenus = useMemo(
+    () => visibleModuleMenus.filter((module) => !activeModuleMenus.includes(module)),
+    [activeModuleMenus, visibleModuleMenus]
+  );
+
+  const visibleFlatMenus = useMemo(
+    () => activeModuleMenus.flatMap((module) => module.menuMeta),
+    [activeModuleMenus]
+  );
+
+  const activeRouteOpenKeys = useMemo(
     () =>
       useGroupedMenu
-        ? visibleModuleMenus
+        ? activeModuleMenus
             .filter((module) =>
               module.menuMeta.some((item) => location.pathname === item.key || location.pathname.startsWith(`${item.key}/`))
             )
             .map((module) => module.moduleMeta.key)
         : [],
-    [useGroupedMenu, visibleModuleMenus, location.pathname]
+    [useGroupedMenu, activeModuleMenus, location.pathname]
   );
 
-  // 当路由命中某个分组时，自动把该分组加入展开状态；同时保留用户手动展开的分组
-  useEffect(() => {
-    if (!useGroupedMenu) {
-      setManualOpenKeys([]);
-      return;
-    }
-
-    setManualOpenKeys((prev) => Array.from(new Set([...prev, ...routeOpenKeys])));
-  }, [useGroupedMenu, routeOpenKeys]);
-
   const mergedOpenKeys = useMemo(
-    () => (useGroupedMenu ? Array.from(new Set([...manualOpenKeys, ...routeOpenKeys])) : []),
-    [useGroupedMenu, manualOpenKeys, routeOpenKeys]
+    () => (useGroupedMenu ? Array.from(new Set([...manualOpenKeys, ...activeRouteOpenKeys])) : []),
+    [useGroupedMenu, manualOpenKeys, activeRouteOpenKeys]
   );
 
   const breadcrumbItems = useMemo(() => {
@@ -88,7 +116,7 @@ const AppLayout: React.FC = () => {
       return ['仪表盘'];
     }
 
-    const matchedModule = visibleModuleMenus.find((module) =>
+    const matchedModule = activeModuleMenus.find((module) =>
       module.menuMeta.some(
         (item) => location.pathname === item.key || location.pathname.startsWith(`${item.key}/`)
       )
@@ -111,7 +139,15 @@ const AppLayout: React.FC = () => {
 
     const segments = location.pathname.split('/').filter(Boolean);
     return segments.length > 0 ? segments : ['首页'];
-  }, [location.pathname, visibleModuleMenus]);
+  }, [location.pathname, activeModuleMenus]);
+
+  const renderModuleTitle = (module: (typeof visibleModuleMenus)[number], offShelf = false) => (
+    <span className="hope-sidebar-module-title">
+      {module.moduleMeta.icon}
+      <span>{module.moduleMeta.title}</span>
+      {offShelf && <Tag size="small" color="gray">下架</Tag>}
+    </span>
+  );
 
   return (
     <ArcoLayout
@@ -141,7 +177,10 @@ const AppLayout: React.FC = () => {
           selectedKeys={[location.pathname]}
           openKeys={mergedOpenKeys}
           onClickSubMenu={(_, openKeys) => setManualOpenKeys(openKeys as string[])}
-          onClickMenuItem={(key) => navigate(key)}
+          onClickMenuItem={(key) => {
+            if (offShelfModuleMenus.some((module) => module.moduleMeta.key === key)) return;
+            navigate(key);
+          }}
           style={{ width: '100%' }}
         >
           {/* 固定的仪表盘菜单项 */}
@@ -152,15 +191,10 @@ const AppLayout: React.FC = () => {
 
           {/* 角色自动切换菜单模式：单角色平铺，多角色（含超级管理员）二级分组 */}
           {useGroupedMenu
-            ? visibleModuleMenus.map((module) => (
+            ? activeModuleMenus.map((module) => (
                 <SubMenu
                   key={module.moduleMeta.key}
-                  title={
-                    <>
-                      {module.moduleMeta.icon}
-                      {module.moduleMeta.title}
-                    </>
-                  }
+                  title={renderModuleTitle(module)}
                 >
                   {module.menuMeta.map((item) => (
                     <MenuItem key={item.key}>
@@ -176,6 +210,27 @@ const AppLayout: React.FC = () => {
                   {item.title}
                 </MenuItem>
               ))}
+          {offShelfModuleMenus.length > 0 && (
+            <SubMenu
+              key="off-shelf-modules"
+              title={
+                <span className="hope-sidebar-off-shelf-title">
+                  <IconStop />
+                  已下架
+                </span>
+              }
+            >
+              {offShelfModuleMenus.map((module) => (
+                <MenuItem
+                  key={module.moduleMeta.key}
+                  disabled
+                  className="hope-sidebar-off-shelf-item"
+                >
+                  {renderModuleTitle(module, true)}
+                </MenuItem>
+              ))}
+            </SubMenu>
+          )}
         </Menu>
       </Sider>
       <ArcoLayout

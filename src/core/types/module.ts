@@ -21,11 +21,21 @@ export interface MenuMeta {
 export interface ModuleMeta {
   /** 分组 key（建议全局唯一），例如 'system'、'timelibrary' */
   key: string;
+  /** 模块角色所属的业务范围，与统一后台 Token 的应用范围独立 */
+  appScope: string;
+  /** 仅超级管理员可访问该模块 */
+  superuserOnly?: boolean;
   /** 分组显示标题 */
   title: string;
   /** 分组图标 */
   icon?: ReactNode;
+  /** 兼容后端返回的应用状态描述；下架判断只使用 is_active */
+  status?: string | null;
+  /** 后端返回的应用启用状态；false 表示下架 */
+  is_active?: boolean | null;
 }
+
+export const isModuleOffShelf = ({ is_active }: Pick<ModuleMeta, 'is_active'>) => is_active === false;
 
 /**
  * 每个独立业务模块的注册结构

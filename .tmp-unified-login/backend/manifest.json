@@ -1,0 +1,67 @@
+[
+  {
+    "path": "core/auth_scope.py",
+    "before_sha256": "49006c6b652d245ec7c7e51e473df620cda2c53650bfcc2559041dfc8b0cd789",
+    "after_sha256": "5b91d9dbe2dd99722770d442df00826d64161fa82eb19378030bed4ce78f4479"
+  },
+  {
+    "path": "core/dependencies.py",
+    "before_sha256": "0340ff60585df2f48e885d0b1e13270f905e800710139aa1d05fb7ecd629e0d0",
+    "after_sha256": "81f181aa1beeba5b2754e6e9bcad5b1f914eff44d048e34aaa423b704ca54f4b"
+  },
+  {
+    "path": "core/users/dependencies.py",
+    "before_sha256": "311408fcb5621f2f5eb8a5caa9f9a1f4991a36dc3f780d5cebf4b29c560bfe60",
+    "after_sha256": "ecabd1d72b973129d54a832de9a3a5a7857596dd0d9d4e534085361afada7691"
+  },
+  {
+    "path": "core/users/services.py",
+    "before_sha256": "1ac3324ed6e4a943b5bec1da3dc5646691db834ea5b952de43fcfc5b28a22936",
+    "after_sha256": "e9ca8ad9189d6655554461fdeb921956978bdaf4ba14cb1c897ebac00b21fc81"
+  },
+  {
+    "path": "core/users/scan_service.py",
+    "before_sha256": "de47990132caf289abbf97628d50cfa6642eb186c7ffd57e12ae69ab098c7e58",
+    "after_sha256": "931bd6700e0fa184d30f6fc7f87c5a2f8a671bf8ed5b5dbe683d32e8435e4f47"
+  },
+  {
+    "path": "apps/aurakey/admin_router.py",
+    "before_sha256": "91bf838be9b75e478c8c10ec604e8106a3d9d6ef654d102c9cc7c680d258edff",
+    "after_sha256": "1a6f0e079b9df90c413b78c3f3f6f5fcc64493ee29d85a8901af5e84baa6c4d2"
+  },
+  {
+    "path": "aurakey_identity_test.py",
+    "before_sha256": "e6e83d826ed57df7d069799219885575bb858fdd246687502234573a20d95ead",
+    "after_sha256": "d23fb3a7a3e63fa00ff9d4676c9ff7b26d0661f7e7ce5d2d7721002166158809"
+  },
+  {
+    "path": "tests/test_scan_login.py",
+    "before_sha256": "1224648b1504dbcb5bf5bd854473ca0646c88f994c8bc8782f1067ae6ab30cc2",
+    "after_sha256": "c3fb0071686df3998ce26b708f66bc73851cf837d179e3c546b7513e465cf5b6"
+  },
+  {
+    "path": "docs/scan-login-api.md",
+    "before_sha256": "2660d2377b541be869a2d0f88a5c23bedcebc5428a6b97a5dc56124694960d59",
+    "after_sha256": "7e39cc6aac48f3947561dc46e84716c809c64aa4f684e87c677aa0bfe5461f7e"
+  },
+  {
+    "path": "docs/identity-login-api.md",
+    "before_sha256": "5ed4adb8e2859f476b4eef5354a41bbc7033c46e5abe48e38a5f98023c906bc8",
+    "after_sha256": "11ec675f509785ef4d7bf75bb7edb2301a666eb01e85bd505a4f8a7c47bf5101"
+  },
+  {
+    "path": "CHANGELOG.md",
+    "before_sha256": "ced026e372267b4ff983e2f4b884461c19c375b614ac267b3101fe598b2cc57e",
+    "after_sha256": "79e907a048f4dfc8ad0c663cdf47f77b86226275b69b70e9c6c08962fb8ed2ab"
+  },
+  {
+    "path": "tests/test_admin_login.py",
+    "before_sha256": "933785dff5ffeb3d72780d19b42937544280124922a74d7fda48f112f570b9cd",
+    "after_sha256": "378dc130e11f91b990336c4d2c93a7cfe9716f407fbd476ee8b029e0aab4e991"
+  },
+  {
+    "path": ".gitignore",
+    "before_sha256": "76673ed4c6f1ba605d1bde1261050891f052b031903b03e2cd8f60228dca32e1",
+    "after_sha256": "92d68bc84d13386a06bf1cd43098f6dbaa69ee623d69ac2993d2115cf48c5e9e"
+  }
+]

@@ -1,6 +1,7 @@
 import { systemModule } from '@/projects/system/router';
 import { aurakeyModule } from '@/projects/aurakey/router';
 import { timelibraryModule } from '@/projects/timelibrary/router';
+import { ledgerMateModule } from '@/projects/ledgerMate/router';
 import type { AppModule } from '@/core/types/module';
 
 /**
@@ -12,5 +13,6 @@ import type { AppModule } from '@/core/types/module';
 export const appModules: AppModule[] = [
   aurakeyModule,
   timelibraryModule,
+  ledgerMateModule,
   systemModule,
 ];

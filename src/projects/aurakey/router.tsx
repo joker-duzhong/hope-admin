@@ -16,12 +16,13 @@ const Loading = () => <div>加载中...</div>;
 export const aurakeyModule: AppModule = {
   moduleMeta: {
     key: 'aurakey',
+    appScope: 'hope_aurakey',
     title: 'AuraKey',
     icon: <IconSettings />,
   },
   routes: [
     {
-      element: <ProtectedRoute allowedRoles={['aurakey_admin', 'SUPER_ADMIN']} />,
+      element: <ProtectedRoute roleScope="hope_aurakey" allowedRoles={['aurakey_admin']} />,
       children: [
         {
           path: 'apps/aurakey',
@@ -83,37 +84,37 @@ export const aurakeyModule: AppModule = {
       key: '/apps/aurakey/dashboard',
       title: '仪表板',
       icon: <IconSettings />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
     {
       key: '/apps/aurakey/user-ops',
       title: '用户处理',
       icon: <IconUserGroup />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
     {
       key: '/apps/aurakey/refund',
       title: '订单退款',
       icon: <IconFile />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
     {
       key: '/apps/aurakey/config',
       title: '配置管理',
       icon: <IconApps />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
     {
       key: '/apps/aurakey/gallery',
       title: '画廊列表',
       icon: <IconImage />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
     {
       key: '/apps/aurakey/products',
       title: '商品列表',
       icon: <IconList />,
-      roles: ['aurakey_admin', 'SUPER_ADMIN'],
+      roles: ['aurakey_admin'],
     },
   ],
 };
